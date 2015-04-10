@@ -188,8 +188,7 @@ sub values {
 
     if (! defined $scope) {        
         $params = $dsl->app->request->params('body');
-        $save = 1;
-        
+        $save = 1;        
     } elsif ($scope eq 'session') {
         $params = $self->{values};
     } elsif ($scope eq 'body' || $scope eq 'query' ) {

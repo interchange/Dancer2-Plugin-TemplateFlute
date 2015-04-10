@@ -86,6 +86,6 @@ $jar->add_cookie_header($req);
 $res = $test->request($req);
 $stored_form = $dsl->from_json($res->content);
 print Dumper $stored_form;
-ok($stored_form->{errors}->{'last-name'}, qq{Failure metho successfully.});
+ok($stored_form->{errors}->{'last-name'}, qq{Failure method successfully set errors.});
 
 exit;

@@ -186,7 +186,9 @@ sub values {
     my (%values, $params, $save);
     my $dsl = $self->{dsl};
 
-    if (! defined $scope) {        
+    %values = %{$self->{values}} if $self->{values};
+
+    if (! defined $scope) {
         $params = $dsl->app->request->params('body');
         $save = 1;        
     } elsif ($scope eq 'session') {
@@ -202,7 +204,8 @@ sub values {
     }
 
     for my $f ( @{$self->{fields}} ) {
-        $values{$f} = $params->{$f};
+        
+        $values{$f} = $params->{$f} ? $params->{$f} : $self->{values}->{$f};
 
         if ($save && defined $values{$f}) {
 	        # tidy form input first
@@ -368,7 +371,7 @@ sub fields {
     $self = shift;
 
     if (@_) {
-	$self->{fields} = shift;
+        $self->{fields} = shift;
     }
 
     return $self->{fields};    

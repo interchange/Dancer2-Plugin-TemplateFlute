@@ -480,55 +480,34 @@ sub to_session {
     $dsl->app->session->write( form => $forms_ref );
 }
 
-=head1 AUTHOR
+=head1 AUTHORS
+
+Original Dancer plugin by:
 
 Stefan Hornburg (Racke), C<< <racke at linuxia.de> >>
 
+Initial port to Dancer2 by:
+
+Evan Brown (evanernest), C<< evan at bottlenose-wine.com >>
+
+Rehacking to Dancer2's plugin2 and general rework:
+
+Peter Mottram (SysPete), C<< peter at sysnix.com >>
+
 =head1 BUGS
 
-Please report any bugs or feature requests to C<bug-Dancer2-template-templateflute at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Dancer2-Template-TemplateFlute>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
+Please report any bugs or feature requests via GitHub issues:
+L<https://github.com/interchange/Dancer2-Plugin-TemplateFlute/issues>.
 
-
-
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc Dancer2::Plugin::Form
-
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=Dancer2-Template-TemplateFlute>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/Dancer2-Template-TemplateFlute>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/Dancer2-Template-TemplateFlute>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/Dancer2-Template-TemplateFlute/>
-
-=back
-
+We will be notified, and then you'll automatically be notified of progress
+on your bug as we make changes.
 
 =head1 ACKNOWLEDGEMENTS
 
 
 =head1 LICENSE AND COPYRIGHT
 
-Copyright 2011-2015 Stefan Hornburg (Racke).
+Copyright 2011-2016 Stefan Hornburg (Racke).
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published
@@ -536,7 +515,6 @@ by the Free Software Foundation; or the Artistic License.
 
 See http://dev.perl.org/licenses/ for more information.
 
-
 =cut
 
-1; # End of Dancer2::Plugin::Form
+1;

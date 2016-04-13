@@ -1,4 +1,4 @@
-package Dancer2::Plugin::Form;
+package Dancer2::Plugin::TemplateFlute;
 
 use warnings;
 use strict;
@@ -9,7 +9,7 @@ my %forms;
 
 =head1 NAME
 
-Dancer2::Plugin::Form - Dancer2 form handler for Template::Flute template engine
+Dancer2::Plugin::TemplateFlute - Dancer2 form handler for Template::Flute template engine
 
 =head1 VERSION
 

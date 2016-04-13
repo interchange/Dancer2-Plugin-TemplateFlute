@@ -1,15 +1,199 @@
-pod2text Dancer2::Plugin::Form.pm > README
+NAME
+    Dancer2::Plugin::TemplateFlute - Dancer2 form handler for
+    Template::Flute template engine
 
-If this is still here it means the programmer was too lazy to create the readme file.
+VERSION
+    Version 0.0001
 
-You can create it now by using the command shown above from this directory.
+SYNOPSIS
+    Display template with checkout form:
 
-At the very least you should be able to use this set of instructions
-to install the module...
+        get '/checkout' => sub {
+            my $form;
 
-perl Makefile.PL
-make
-make test
-make install
+            $form = form('checkout');
+        
+            template 'checkout', {form => $form};
+        };
 
-If you are on a windows box you should use 'nmake' rather than 'make'.
+    Retrieve form input from checkout form:
+
+        post '/checkout' => sub {
+            my ($form, $values);
+
+            $form = form('checkout');
+            $values = $form->values();
+        };
+
+    Reset form after completion to prevent old data from showing up on new
+    form:
+
+        $form = form('checkout');
+        $form->reset;
+
+DESCRIPTION
+    "Dancer2::Plugin::Form" is used for forms with the
+    Dancer2::Template::TemplateFlute templating engine.
+
+    Form fields, values and errors are stored into and loaded from the
+    session key "form".
+
+METHODS
+  new
+    Creates "Dancer2::Plugin::Form" object.
+
+  name
+    Get form name:
+
+        $form->name
+
+  action
+    Set form action:
+
+       $form->action('/checkout');
+
+    Get form action:
+
+       $action = $form->action;
+
+  fill
+    Fill form values:
+
+        $form->fill({username => 'racke', email => 'racke@linuxia.de'});
+
+  values
+    Get form values as hash reference:
+
+        $values = $form->values;
+
+    Set form values from a hash reference:
+
+        $values => $form->values(ref => \%input);
+
+  valid
+    Determine whether form values are valid:
+
+        $form->valid();
+
+    Return values are 1 (valid), 0 (invalid) or undef (unknown).
+
+    Set form status to "valid":
+
+        $form->valid(1);
+
+    Set form status to "invalid":
+
+        $form->valid(0);
+
+    The form status automatically changes to "invalid" when errors method is
+    called with error messages.
+
+  errors
+    Set form errors:
+
+       $form->errors({username => 'Minimum 8 characters',
+                      email => 'Invalid email address'});
+
+    Get form errors as hash reference:
+
+       $errors = $form->errors;
+
+  errors_hashed
+    Returns form errors as array reference filled with a hash reference for
+    each error.
+
+  failure
+    Indicates form failure by passing form errors.
+
+        $form->failure(errors => {username => 'Minimum 8 characters',
+                                  email => 'Invalid email address'});
+
+    You can also set a route for redirection:
+
+        return $form->failure(errors => {username => 'Minimum 8 characters'},
+            route => '/account');
+
+    Passing parameters for the redirection URL is also possible:
+
+        return $form->failure(errors => {username => 'Minimum 8 characters'},
+            route => '/account',
+            params => {layout => 'mobile'});
+
+    Please ensure that you validate input submitted by an user before adding
+    them to the "params" hash.
+
+  fields
+    Set form fields:
+
+        $form->fields([qw/username email password verify/]);
+
+    Get form fields:
+
+        $fields = $form->fields;
+
+  pristine
+    Determines whether a form is pristine or not.
+
+    This can be used to fill the form with default values and suppress
+    display of errors.
+
+    A form is pristine until it receives form field input from the request
+    or out of the session.
+
+  reset
+    Reset form information (fields, errors, values, valid) and updates
+    session accordingly.
+
+  from_session
+    Loads form data from session key 'form'. Returns 1 if session contains
+    data for this form, 0 otherwise.
+
+  to_session
+    Saves form name, form fields, form values and form errors into session
+    key 'form'.
+
+AUTHOR
+    Stefan Hornburg (Racke), "<racke at linuxia.de>"
+
+BUGS
+    Please report any bugs or feature requests to
+    "bug-Dancer2-template-templateflute at rt.cpan.org", or through the web
+    interface at
+    <http://rt.cpan.org/NoAuth/ReportBug.html?Queue=Dancer2-Template-Templat
+    eFlute>. I will be notified, and then you'll automatically be notified
+    of progress on your bug as I make changes.
+
+SUPPORT
+    You can find documentation for this module with the perldoc command.
+
+        perldoc Dancer2::Plugin::Form
+
+    You can also look for information at:
+
+    *   RT: CPAN's request tracker
+
+        <http://rt.cpan.org/NoAuth/Bugs.html?Dist=Dancer2-Template-TemplateF
+        lute>
+
+    *   AnnoCPAN: Annotated CPAN documentation
+
+        <http://annocpan.org/dist/Dancer2-Template-TemplateFlute>
+
+    *   CPAN Ratings
+
+        <http://cpanratings.perl.org/d/Dancer2-Template-TemplateFlute>
+
+    *   Search CPAN
+
+        <http://search.cpan.org/dist/Dancer2-Template-TemplateFlute/>
+
+ACKNOWLEDGEMENTS
+LICENSE AND COPYRIGHT
+    Copyright 2011-2015 Stefan Hornburg (Racke).
+
+    This program is free software; you can redistribute it and/or modify it
+    under the terms of either: the GNU General Public License as published
+    by the Free Software Foundation; or the Artistic License.
+
+    See http://dev.perl.org/licenses/ for more information.
+

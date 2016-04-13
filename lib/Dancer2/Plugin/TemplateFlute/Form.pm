@@ -26,17 +26,18 @@ has name => (
     default => 'main',
 );
 
+=head2 plugin
+
+Dancer2 plugin.
+
+Required.
+
+=cut
+
 has plugin => (
     is       => 'ro',
     isa      => InstanceOf ['Dancer2::Plugin'],
     required => 1,
-);
-
-has appname => (
-    is      => 'ro',
-    isa     => Str,
-    lazy    => 1,
-    default => sub { $_[0]->plugin->app->name },
 );
 
 =head2 action
@@ -66,18 +67,46 @@ Get form fields:
 
     $fields = $form->fields;
 
+=over
+
+=item clearer: clear_fields
+
+=back
+
 =cut
 
 has fields => (
     is      => 'rw',
     isa     => ArrayRef,
     default => sub { [] },
+    clearer => 1,
 );
 
+=head2 errors
+    
+Set form errors:
+    
+   $form->errors({username => 'Minimum 8 characters',
+                  email => 'Invalid email address'});
+
+Get form errors as hash reference:
+
+   $errors = $form->errors;
+
+=over
+
+=item clearer: clear_errors
+
+=back
+
+=cut
+
 has errors => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => ArrayRef,
     default => sub { [] },
+    trigger => sub { $_[0]->valid(0) },
+    clearer => 1,
 );
 
 =head2 valid
@@ -110,7 +139,7 @@ error messages.
 =cut
 
 has valid => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => Bool,
     trigger => sub {
         my ( $self, $value ) = @_;
@@ -131,19 +160,12 @@ of errors.
 A form is pristine until it receives form field input from the request or
 out of the session.
 
-=over
-
-=item writer: set_pristine
-
-=back
-
 =cut
 
 has pristine => (
-    is      => 'ro',
+    is      => 'rw',
     isa     => Bool,
     default => 1,
-    writer  => 'set_pristine',
 );
 
 =head2 values
@@ -172,9 +194,8 @@ has values => (
     is      => 'ro',
     isa     => HashRef,
     default => sub { {} },
-    writer  => 'fill',
     coerce  => sub { ref( $_[0] ) eq 'HASH' ? $_[0] : +{@_} },
-    trigger => sub { $_[0]->set_pristine(0) },
+    trigger => sub { $_[0]->pristine(0) },
     clearer => 1,
 );
 
@@ -201,19 +222,18 @@ Set form values from a hash reference:
 sub values {
     my ( $self, $scope, $data ) = @_;
     my ( %values, $params, $save );
-    my $dsl = $self->_get_dsl;
 
     %values = %{ $self->{values} } if $self->{values};
 
     if ( !defined $scope ) {
-        $params = $dsl->app->request->params('body');
+        $params = $self->plugin->app->request->params('body');
         $save   = 1;
     }
     elsif ( $scope eq 'session' ) {
         $params = $self->{values};
     }
     elsif ( $scope eq 'body' || $scope eq 'query' ) {
-        $params = $dsl->app->request->params($scope);
+        $params = $self->plugin->app->request->params($scope);
         $save   = 1;
     }
     elsif ( $scope eq 'ref' ) {
@@ -244,40 +264,22 @@ sub values {
     return \%values;
 }
 
-=head2 errors
-    
-Set form errors:
-    
-   $form->errors({username => 'Minimum 8 characters',
-                  email => 'Invalid email address'});
-
-Get form errors as hash reference:
-
-   $errors = $form->errors;
-
-=cut
-
-sub errors {
-    my ( $self, $errors ) = @_;
-    my ( $key, $value, @buf );
-
-    if ($errors) {
-        if ( ref($errors) eq 'HASH' ) {
-            while ( ( $key, $value ) = each %$errors ) {
-                push @buf, { name => $key, label => $value };
-            }
-            $self->{errors} = \@buf;
-        }
-        $self->{valid} = 0;
-    }
-
-    return $self->{errors};
-}
-
 =head2 errors_hashed
 
 Returns form errors as array reference filled with a hash reference
 for each error.
+
+For example these L</errors>:
+
+    { username => 'Minimum 8 characters',
+      email => 'Invalid email address' }
+
+will be returned as:
+
+    [
+        { name => 'username', value => 'Minimum 8 characters'  },
+        { name => 'email',    value => 'Invalid email address' },
+    ]
 
 =cut
 
@@ -317,24 +319,24 @@ adding them to the C<params> hash.
 
 sub failure {
     my ( $self, %args ) = @_;
-    my $dsl = $self->_get_dsl;
 
     $self->{errors} = $args{errors};
 
     # update session data about this form
     $self->to_session();
 
-    $dsl->app->session->write(
+    $self->plugin->app->session->write(
         form_errors => '<ul>'
           . join( '',
             map { "<li>$_</li>" } CORE::values %{ $args{errors} || {} } )
           . '</ul>'
     );
 
-    $dsl->app->session->write( form_data => $args{data} );
+    $self->plugin->app->session->write( form_data => $args{data} );
 
     if ( $args{route} ) {
-        $dsl->redirect( $dsl->uri_for( $args{route}, $args{params} ) );
+        $self->plugin->app->redirect(
+            $self->app->uri_for( $args{route}, $args{params} ) );
     }
 
     return;
@@ -352,11 +354,11 @@ updates session accordingly.
 sub reset {
     my $self = shift;
 
-    $self->{fields} = [];
-    $self->{errors} = [];
+    $self->clear_fields;
+    $self->clear_errors;
     $self->clear_values;
     $self->clear_valid;
-    $self->set_pristine(1);
+    $self->pristine(1);
     $self->to_session;
 
     return 1;
@@ -372,19 +374,18 @@ Returns 1 if session contains data for this form, 0 otherwise.
 sub from_session {
     my ($self) = @_;
     my ( $forms_ref, $form );
-    my $dsl = $self->_get_dsl;
 
-    if ( $forms_ref = $dsl->app->session->read('form') ) {
-        if ( exists $forms_ref->{ $self->{name} } ) {
-            $form = $forms_ref->{ $self->{name} };
-            $self->{fields} = $form->{fields} || [];
-            $self->{errors} = $form->{errors} || [];
-            $self->{values} = $form->{values} || {};
-            $self->{valid}  = $form->{valid};
+    if ( $forms_ref = $plugin->app->session->read('form') ) {
+        if ( exists $forms_ref->{ $self->name } ) {
+            $form = $forms_ref->{ $self->name };
+            $self->fields = $form->fields || [];
+            $self->errors = $form->errors || {};
+            $self->values = $form->values || {};
+            $self->valid  = $form->valid;
 
-            while ( my ( $key, $value ) = each %{ $self->{values} } ) {
+            while ( my ( $key, $value ) = each %{ $self->values } ) {
                 if ( defined $value ) {
-                    $self->{pristine} = 0;
+                    $self->pristine(0);
                     last;
                 }
             }
@@ -404,24 +405,23 @@ session key 'form'.
 =cut
 
 sub to_session {
-    my ($self) = @_;
+    my $self = shift;
     my ($forms_ref);
-    my $dsl = $self->_get_dsl;
 
     # get current form information from session
-    $forms_ref = $dsl->app->session->read('form');
+    $forms_ref = $plugin->app->session->read('form');
 
     # update our form
-    $forms_ref->{ $self->{name} } = {
-        name   => $self->{name},
-        fields => $self->{fields},
-        errors => $self->{errors},
-        values => $self->{values},
-        valid  => $self->{valid},
+    $forms_ref->{ $self->name } = {
+        name   => $self->name,
+        fields => $self->fields,
+        errors => $self->errors,
+        values => $self->values,
+        valid  => $self->valid,
     };
 
     # update form information
-    $dsl->app->session->write( form => $forms_ref );
+    $plugin->app->session->write( form => $forms_ref );
 }
 
 =head1 AUTHORS

@@ -3,7 +3,6 @@ package Dancer2::Plugin::Form;
 use warnings;
 use strict;
 
-use Dancer2;
 use Dancer2::Plugin;
 
 my %forms;
@@ -88,7 +87,7 @@ sub new {
     $class = shift;
     $dsl = shift;
 
-    $self = { dsl => $dsl, fields => [], errors => [], valid => undef, pristine => 1};
+    $self = { appname => $dsl->app->name, fields => [], errors => [], valid => undef, pristine => 1};
     bless $self;
 
     %params = @_;
@@ -107,6 +106,12 @@ sub new {
     $self->from_session();
     
     return $self;
+}
+
+sub _get_dsl {
+    my $self = shift;
+
+    return $self->{appname}->dsl;
 }
 
 =head2 name
@@ -184,7 +189,7 @@ Set form values from a hash reference:
 sub values {
     my ($self, $scope, $data) = @_;
     my (%values, $params, $save);
-    my $dsl = $self->{dsl};
+    my $dsl = $self->_get_dsl;
 
     %values = %{$self->{values}} if $self->{values};
 
@@ -248,7 +253,7 @@ error messages.
 sub valid {
     my $self = shift;
     my $valid = shift;
-    my $dsl = $self->{dsl};
+    my $dsl = $self->_get_dsl;
 
     if (defined $valid) {
 	    $dsl->debug("Setting valid for $self->{name} to $valid.");
@@ -334,7 +339,7 @@ adding them to the C<params> hash.
 
 sub failure {
     my ($self, %args) = @_;
-    my $dsl = $self->{dsl};
+    my $dsl = $self->_get_dsl;
 
     $self->{errors} = $args{errors};
 
@@ -424,7 +429,7 @@ Returns 1 if session contains data for this form, 0 otherwise.
 sub from_session {
     my ($self) = @_;
     my ($forms_ref, $form);
-    my $dsl = $self->{dsl};
+    my $dsl = $self->_get_dsl;
 
     if ($forms_ref = $dsl->app->session->read('form')) {
         if (exists $forms_ref->{$self->{name}}) {
@@ -458,9 +463,10 @@ session key 'form'.
 sub to_session {
     my ($self) = @_;
     my ($forms_ref);
+    my $dsl = $self->_get_dsl;
 
     # get current form information from session
-    $forms_ref = $self->{dsl}->app->session->read('form');
+    $forms_ref = $dsl->app->session->read('form');
 
     # update our form
     $forms_ref->{$self->{name}} = {name => $self->{name}, 
@@ -471,7 +477,7 @@ sub to_session {
     };
     
     # update form information
-    $self->{dsl}->app->session->write( form => $forms_ref );
+    $dsl->app->session->write( form => $forms_ref );
 }
 
 =head1 AUTHOR

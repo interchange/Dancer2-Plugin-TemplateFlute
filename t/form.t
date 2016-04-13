@@ -6,7 +6,7 @@ use Dancer2::Test;
 use HTTP::Request::Common;
 use HTTP::Cookies;
 
-use Test::More tests => 2;
+use Test::More tests => 14;
 use Data::Dumper;
 
 use lib './t/lib/TestApp';
@@ -85,7 +85,4 @@ $req = GET 'http://localhost:3000/fail_test';
 $jar->add_cookie_header($req);
 $res = $test->request($req);
 $stored_form = $dsl->from_json($res->content);
-print Dumper $stored_form;
 ok($stored_form->{errors}->{'last-name'}, qq{Failure method successfully set errors.});
-
-exit;

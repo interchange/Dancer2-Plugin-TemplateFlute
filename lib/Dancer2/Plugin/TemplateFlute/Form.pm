@@ -379,11 +379,11 @@ Stefan Hornburg (Racke), C<< <racke at linuxia.de> >>
 
 Initial port to Dancer2 by:
 
-Evan Brown (evanernest), C<< evan at bottlenose-wine.com >>
+Evan Brown (evanernest), C<< <evan at bottlenose-wine.com> >>
 
 Rehacking to Dancer2's plugin2 and general rework:
 
-Peter Mottram (SysPete), C<< peter at sysnix.com >>
+Peter Mottram (SysPete), C<< <peter at sysnix.com> >>
 
 =head1 BUGS
 

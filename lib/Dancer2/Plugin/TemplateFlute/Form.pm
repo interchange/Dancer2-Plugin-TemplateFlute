@@ -1,14 +1,190 @@
 package Dancer2::Plugin::TemplateFlute::Form;
 
-use Dancer2::Core::Types -types;
+use Hash::MultiValue;
+use Types::Standard -types;
 use Moo;
 use namespace::clean;
-
-my %forms;
 
 =head1 NAME
 
 Dancer2::Plugin::TemplateFlute::Form - form object for Template::Flute
+
+=cut
+
+#
+# attributes
+#
+
+has action => (
+    is        => 'rw',
+    isa       => Str,
+    predicate => 1,
+);
+
+has errors => (
+    is      => 'rw',
+    isa     => InstanceOf ['Hash::MultiValue'],
+    default => sub { Hash::MultiValue->new },
+    coerce  => sub {
+        if ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
+            $_[0];
+        }
+        elsif ( ref( $_[0] ) eq 'HASH' ) {
+            Hash::MultiValue->from_mixed( @_[0] );
+        }
+        else {
+            Hash::MultiValue->new(@_);
+        }
+    },
+    trigger => sub {
+        $_[0]->valid(0);
+    },
+    clearer => 1,
+);
+
+has fields => (
+    is      => 'rw',
+    isa     => ArrayRef,
+    default => sub { [] },
+    clearer => 1,
+);
+
+has log_cb => (
+    is      => 'ro',
+    isa     => CodeRef,
+    default => sub {
+        sub { 1 }
+    },
+);
+
+has name => (
+    is      => 'ro',
+    isa     => Str,
+    default => 'main',
+);
+
+has pristine => (
+    is      => 'rw',
+    isa     => Bool,
+    default => 1,
+);
+
+has session => (
+    is       => 'ro',
+    isa      => HasMethods [ 'read', 'write' ],
+    required => 1,
+);
+
+has valid => (
+    is      => 'rw',
+    isa     => Bool,
+    trigger => sub {
+        my ( $self, $value ) = @_;
+
+        $self->log( "debug", "Setting valid for form ",
+            $self->name, "to $value." );
+
+        $self->to_session;
+    },
+    clearer => 1,
+);
+
+has values => (
+    is      => 'ro',
+    isa     => InstanceOf ['Hash::MultiValue'],
+    default => sub { Hash::MultiValue->new },
+    coerce  => sub {
+        if ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
+            $_[0];
+        }
+        elsif ( ref( $_[0] ) eq 'HASH' ) {
+            Hash::MultiValue->from_mixed( @_[0] );
+        }
+        else {
+            Hash::MultiValue->new(@_);
+        }
+    },
+    clearer   => 1,
+);
+
+#
+# methods
+#
+
+sub add_error {
+    my $self = shift;
+    $self->errors->add(@_);
+    $self->valid(0);
+}
+
+sub errors_hashed {
+    my ($self) = @_;
+    my (@hashed);
+
+    for my $err ( @{ $self->errors } ) {
+        push( @hashed, { name => $err->[0], label => $err->[1] } );
+    }
+
+    return \@hashed;
+}
+
+sub from_session {
+    my ($self) = @_;
+
+    if ( my $forms_ref = $self->session->read('form') ) {
+        if ( exists $forms_ref->{ $self->name } ) {
+            my $form = $forms_ref->{ $self->name };
+
+            $self->fields( $form->fields ) if $form->fields;
+            $self->errors( $form->errors ) if $form->errors;
+            $self->values( $form->values ) if $form->values;
+            $self->valid( $form->valid )   if defined $form->valid;
+
+            return 1;
+        }
+    }
+    return 0;
+}
+
+sub log {
+    shift->log_cb->(@_);
+}
+
+sub reset {
+    my $self = shift;
+    $self->clear_fields;
+    $self->clear_errors;
+    $self->clear_values;
+    $self->clear_valid;
+    $self->pristine(1);
+    $self->to_session;
+}
+
+sub set_error {
+    my $self = shift;
+    $self->errors->set(@_);
+    $self->valid(0);
+}
+
+sub to_session {
+    my $self = shift;
+    my ($forms_ref);
+
+    # get current form information from session
+    $forms_ref = $self->session->read('form');
+
+    # update our form
+    $forms_ref->{ $self->name } = {
+        name   => $self->name,
+        fields => $self->fields,
+        errors => $self->errors->mixed,
+        values => $self->values->mixed,
+        valid  => $self->valid,
+    };
+
+    # update form information
+    $self->session->write( form => $forms_ref );
+}
 
 =head1 ATTRIBUTES
 
@@ -17,28 +193,6 @@ Dancer2::Plugin::TemplateFlute::Form - form object for Template::Flute
 The name of the form.
 
 Defaults to 'main',
-
-=cut
-
-has name => (
-    is      => 'ro',
-    isa     => Str,
-    default => 'main',
-);
-
-=head2 plugin
-
-Dancer2 plugin.
-
-Required.
-
-=cut
-
-has plugin => (
-    is       => 'ro',
-    isa      => InstanceOf ['Dancer2::Plugin'],
-    required => 1,
-);
 
 =head2 action
 
@@ -50,12 +204,37 @@ Get form action:
 
    $action = $form->action;
 
-=cut
+=over
 
-has action => (
-    is  => 'rw',
-    isa => Str,
-);
+=item predicate: has_action
+
+=back
+
+=head2 errors
+    
+Errors stored in a L<Hash::MultiValue> object.
+
+Set form errors (this will overwrite all existing errors):
+    
+    $form->errors(
+        username => 'Minimum 8 characters',
+        username => 'Must contain at least one number',
+        email    => 'Invalid email address',
+    );
+
+Get form errors:
+
+   $errors = $form->errors;
+
+=over
+
+=item clearer: clear_errors
+
+=back
+
+B<NOTE:> Avoid using C<< $form->errors->add() >> or C<< $form->errors->set() >>
+since doing that means that L</valid> does not automatically get set to C<0>.
+Instead use one of L</add_error> or L</set_error> methods.
 
 =head2 fields
 
@@ -73,41 +252,29 @@ Get form fields:
 
 =back
 
-=cut
+=head2 log_cb
 
-has fields => (
-    is      => 'rw',
-    isa     => ArrayRef,
-    default => sub { [] },
-    clearer => 1,
-);
+A code reference that can be used to log things. Signature must be like:
 
-=head2 errors
-    
-Set form errors:
-    
-   $form->errors({username => 'Minimum 8 characters',
-                  email => 'Invalid email address'});
+  $log_cb->( $level, @message );
 
-Get form errors as hash reference:
+Logging is via L</log> method.
 
-   $errors = $form->errors;
+=head2 pristine
 
-=over
+Determines whether a form is pristine or not.
 
-=item clearer: clear_errors
+This can be used to fill the form with default values and suppress display
+of errors.
 
-=back
+A form is pristine until it receives form field input from the request or
+out of the session.
 
-=cut
+=head2 session
 
-has errors => (
-    is      => 'rw',
-    isa     => ArrayRef,
-    default => sub { [] },
-    trigger => sub { $_[0]->valid(0) },
-    clearer => 1,
-);
+A session object. Must have methods C<read> and C<write>.
+
+Required.
 
 =head2 valid
 
@@ -126,9 +293,8 @@ Set form status to "invalid":
     
     $form->valid(0);
 
-The form status automatically changes to
-"invalid" when errors method is called with
-error messages.
+The form status automatically changes to "invalid" when L</errors> is set
+or either L</add_errors> or L</set_errors> are called.
     
 =over
 
@@ -136,41 +302,11 @@ error messages.
 
 =back
 
-=cut
-
-has valid => (
-    is      => 'rw',
-    isa     => Bool,
-    trigger => sub {
-        my ( $self, $value ) = @_;
-        $self->plugin->app->log( "debug", "Setting valid for form ",
-            $self->name, "to $value." );
-        $self->to_session;
-    },
-    clearer => 1,
-);
-
-=head2 pristine
-
-Determines whether a form is pristine or not.
-
-This can be used to fill the form with default values and suppress display
-of errors.
-
-A form is pristine until it receives form field input from the request or
-out of the session.
-
-=cut
-
-has pristine => (
-    is      => 'rw',
-    isa     => Bool,
-    default => 1,
-);
-
 =head2 values
 
-Hash reference of C<< $field => $value >> pairs.
+Get form values as hash reference:
+
+    $values = $form->values;
 
 =over
 
@@ -180,93 +316,21 @@ Fill form values:
 
     $form->fill({username => 'racke', email => 'racke@linuxia.de'});
 
-Also accepts hash:
-
-    $form->fill(username => 'racke', email => 'racke@linuxia.de');
-
 =item clearer: clear_values
 
 =back
 
-=cut
+=head1 METHODS
 
-has values => (
-    is      => 'ro',
-    isa     => HashRef,
-    default => sub { {} },
-    coerce  => sub { ref( $_[0] ) eq 'HASH' ? $_[0] : +{@_} },
-    trigger => sub { $_[0]->pristine(0) },
-    clearer => 1,
-);
+=head2 add_error
 
-sub BUILDARGS {
+Add an error:
 
-    # try to load form data from session
-    $self->from_session();
-
-    return $self;
-}
-
-=head2 values
-
-Get form values as hash reference:
-
-    $values = $form->values;
-
-Set form values from a hash reference:
-
-    $values => $form->values(ref => \%input);
-
-=cut
-
-sub values {
-    my ( $self, $scope, $data ) = @_;
-    my ( %values, $params, $save );
-
-    %values = %{ $self->{values} } if $self->{values};
-
-    if ( !defined $scope ) {
-        $params = $self->plugin->app->request->params('body');
-        $save   = 1;
-    }
-    elsif ( $scope eq 'session' ) {
-        $params = $self->{values};
-    }
-    elsif ( $scope eq 'body' || $scope eq 'query' ) {
-        $params = $self->plugin->app->request->params($scope);
-        $save   = 1;
-    }
-    elsif ( $scope eq 'ref' ) {
-        $params = $data;
-        $save   = 1;
-    }
-    else {
-        $params = '';
-    }
-
-    for my $f ( @{ $self->{fields} } ) {
-
-        $values{$f} = $params->{$f} ? $params->{$f} : $self->{values}->{$f};
-
-        if ( $save && defined $values{$f} ) {
-
-            # tidy form input first
-            $values{$f} =~ s/^\s+//;
-            $values{$f} =~ s/\s+$//;
-        }
-    }
-
-    if ($save) {
-        $self->{values} = \%values;
-        return \%values;
-    }
-
-    return \%values;
-}
+    $form->add_error( $key, $value [, $value ... ]);
 
 =head2 errors_hashed
 
-Returns form errors as array reference filled with a hash reference
+Returns form errors as array reference filled with hash references
 for each error.
 
 For example these L</errors>:
@@ -281,148 +345,31 @@ will be returned as:
         { name => 'email',    value => 'Invalid email address' },
     ]
 
-=cut
+=head2 from_session
 
-sub errors_hashed {
-    my ($self) = @_;
-    my (@hashed);
+Loads form data from session key C<form>.
+Returns 1 if session contains data for this form, 0 otherwise.
 
-    for my $err ( @{ $self->{errors} } ) {
-        push( @hashed, { name => $err->[0], label => $err->[1] } );
-    }
+=head2 log $level, @message
 
-    return \@hashed;
-}
-
-=head2 failure
-
-Indicates form failure by passing form errors.
-
-    $form->failure(errors => {username => 'Minimum 8 characters',
-                              email => 'Invalid email address'});
-
-You can also set a route for redirection:
-
-    return $form->failure(errors => {username => 'Minimum 8 characters'},
-        route => '/account');
-
-Passing parameters for the redirection URL is also possible:
-
-    return $form->failure(errors => {username => 'Minimum 8 characters'},
-        route => '/account',
-        params => {layout => 'mobile'});
-
-Please ensure that you validate input submitted by an user before
-adding them to the C<params> hash.
-
-=cut
-
-sub failure {
-    my ( $self, %args ) = @_;
-
-    $self->{errors} = $args{errors};
-
-    # update session data about this form
-    $self->to_session();
-
-    $self->plugin->app->session->write(
-        form_errors => '<ul>'
-          . join( '',
-            map { "<li>$_</li>" } CORE::values %{ $args{errors} || {} } )
-          . '</ul>'
-    );
-
-    $self->plugin->app->session->write( form_data => $args{data} );
-
-    if ( $args{route} ) {
-        $self->plugin->app->redirect(
-            $self->app->uri_for( $args{route}, $args{params} ) );
-    }
-
-    return;
-}
-
-=head1 METHODS
+Log message via L</log_cb>.
 
 =head2 reset
 
 Reset form information (fields, errors, values, valid) and
 updates session accordingly.
 
-=cut
+=head2 set_error
 
-sub reset {
-    my $self = shift;
+Set a specific error:
 
-    $self->clear_fields;
-    $self->clear_errors;
-    $self->clear_values;
-    $self->clear_valid;
-    $self->pristine(1);
-    $self->to_session;
-
-    return 1;
-}
-
-=head2 from_session
-
-Loads form data from session key 'form'.
-Returns 1 if session contains data for this form, 0 otherwise.
-
-=cut
-
-sub from_session {
-    my ($self) = @_;
-    my ( $forms_ref, $form );
-
-    if ( $forms_ref = $plugin->app->session->read('form') ) {
-        if ( exists $forms_ref->{ $self->name } ) {
-            $form = $forms_ref->{ $self->name };
-            $self->fields = $form->fields || [];
-            $self->errors = $form->errors || {};
-            $self->values = $form->values || {};
-            $self->valid  = $form->valid;
-
-            while ( my ( $key, $value ) = each %{ $self->values } ) {
-                if ( defined $value ) {
-                    $self->pristine(0);
-                    last;
-                }
-            }
-
-            return 1;
-        }
-    }
-
-    return 0;
-}
+    $form->set_error( $key, $value [, $value ... ]);
 
 =head2 to_session
 
 Saves form name, form fields, form values and form errors into 
-session key 'form'.
+session key C<form>.
 
-=cut
-
-sub to_session {
-    my $self = shift;
-    my ($forms_ref);
-
-    # get current form information from session
-    $forms_ref = $plugin->app->session->read('form');
-
-    # update our form
-    $forms_ref->{ $self->name } = {
-        name   => $self->name,
-        fields => $self->fields,
-        errors => $self->errors,
-        values => $self->values,
-        valid  => $self->valid,
-    };
-
-    # update form information
-    $plugin->app->session->write( form => $forms_ref );
-}
 
 =head1 AUTHORS
 

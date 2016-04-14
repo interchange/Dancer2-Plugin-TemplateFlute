@@ -4,6 +4,7 @@ use warnings;
 use strict;
 
 use Dancer2::Plugin;
+use Dancer2::Plugin::TemplateFlute::Form;
 
 =head1 NAME
 
@@ -17,6 +18,41 @@ Version 0.0002
 
 our $VERSION = '0.0002';
 
+plugin_keywords 'form';
+
+sub form {
+    my $plugin = shift;
+    my %params;
+
+    if ( @_ % 2 ) {
+        $params{name} = shift;
+    }
+
+    my $source = delete $params{source};
+
+    if ( $source ) {
+        if ( $source eq 'body' ) {
+            $params{values} = $plugin->app->request->body_parameters;
+        }
+        elsif ( $source eq 'query' ) {
+            $params{values} = $plugin->app->request->query_parameters;
+        }
+        elsif ( $source eq 'parameters' ) {
+            $params{values} = $plugin->app->request->parameters;
+        }
+    }
+
+    my $form = Dancer2::Plugin::TemplateFlute::Form->new(
+        log_cb  => $plugin->app->log,
+        session => $plugin->app->session,
+        %params,
+    );
+
+    $form->from_session if ( $source && $source eq 'session' );
+
+    return $form;
+}
+
 =head1 SYNOPSIS
 
 Display template with checkout form:
@@ -24,50 +60,93 @@ Display template with checkout form:
     get '/checkout' => sub {
         my $form;
 
-        $form = form('checkout');
+        $form = form( name => 'checkout', source => 'session' );
 	
-        template 'checkout', {form => $form};
+        template 'checkout', { form => $form };
     };
 
-Retrieve form input from checkout form:
+Retrieve form input from checkout form body:
 
     post '/checkout' => sub {
         my ($form, $values);
 
-        $form = form('checkout');
-        $values = $form->values();
+        $form = form( name => 'checkout', source => 'body' );
+        $values = $form->values;
     };
 
 Reset form after completion to prevent old data from
 showing up on new form:
 
-    $form = form('checkout');
-    $form->reset;
+    form('checkout')->reset;
 
-=cut
+If you have multiple forms then just pass the form token as an array reference:
 
-register form => sub {
-    my $plugin = shift;
+    get '/cart' => sub {
+        my ( $cart_form, $inquiry_form );
 
-    my $name = '';
+        # 'source' defaults to 'session' if not provided
+        $cart_form    = form( name => 'cart' );
 
-    if ( @_ % 2 ) {
-        $name = shift;
-    }
-    else {
-        $name = 'main';
-    }
+        # equivalent to form( name => 'inquiry' )
+        $inquiry_form = form( 'inquiry' );
+	
+        template 'checkout', { form => [ $cart_form, $inquiry_form ] };
+    };
 
-    my $form = Dancer2::Plugin::TemplateFlute::Form->new(
-        plugin => $plugin,
-        name   => $name,
-        @_
-    );
+=head1 KEYWORDS
 
-    return $form;
-};
+=head2 form <$name|%params>
 
-register_plugin;
+The following C<%params> are recognised:
+
+=head3 name
+
+The name of the form. Defaults to 'main'.
+
+=head3 values
+
+    my $form = form( 'main', values => $params );
+
+The form parameters as a L<Hash::MultiValue> object or something that can
+be coerced into one.
+
+Instead of L</values> you can also use L</source> to set initial values.
+
+=head3 source
+
+    my $form = form( name => 'main', source => 'body' );
+
+The following values are valid:
+
+=over
+
+=item body
+
+This sets the form values to the request body parameters
+L<Dancer2::Core::Request::body_parameters>.
+
+=item query
+
+This sets the form values to the request query parameters
+L<Dancer2::Core::Request::query_parameters>.
+
+=item parameters
+
+This sets the form values to the combined body and request query parameters
+L<Dancer2::Core::Request::parameters>.
+
+=item session
+
+Reads in values from the session. This is the default if no L</source> or
+L</parameters> are specified.
+
+=back
+
+B<NOTE:> if both L</source> and L</values> are supplied then L<values> is
+ignored.
+
+See L<Dancer2::Plugin::TemplateFlute::Form> for details of other parameters
+that can be used.
 
 =head1 DESCRIPTION
     

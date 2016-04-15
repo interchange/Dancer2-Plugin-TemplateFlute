@@ -12,6 +12,21 @@ Dancer2::Plugin::TemplateFlute::Form - form object for Template::Flute
 
 =cut
 
+my $coerce_to_hash_multivalue = sub {
+    if ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
+        $_[0];
+    }
+    elsif ( ref( $_[0] ) eq 'HASH' ) {
+        Hash::MultiValue->from_mixed( $_[0] );
+    }
+    elsif ( @_ && !@_ % 2 ) {
+        Hash::MultiValue->new(@_);
+    }
+    else {
+        croak "Unable to coerce to Hash::MultiValue";
+    }
+};
+
 #
 # attributes
 #
@@ -28,20 +43,7 @@ has errors => (
     lazy    => 1,
     isa     => InstanceOf ['Hash::MultiValue'],
     default => sub { Hash::MultiValue->new },
-    coerce  => sub {
-        if ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
-            $_[0];
-        }
-        elsif ( ref( $_[0] ) eq 'HASH' ) {
-            Hash::MultiValue->from_mixed( $_[0] );
-        }
-        elsif ( @_ && !@_ % 2 ) {
-            Hash::MultiValue->new(@_);
-        }
-        else {
-            croak "Unable to coerce errors";
-        }
-    },
+    coerce  => $coerce_to_hash_multivalue,
     clearer => 1,
     writer  => 'set_errors',
 );
@@ -114,20 +116,7 @@ has values => (
     lazy    => 1,
     isa     => InstanceOf ['Hash::MultiValue'],
     default => sub { Hash::MultiValue->new },
-    coerce  => sub {
-        if ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
-            $_[0];
-        }
-        elsif ( ref( $_[0] ) eq 'HASH' ) {
-            Hash::MultiValue->from_mixed( $_[0] );
-        }
-        elsif ( @_ && !@_ % 2 ) {
-            Hash::MultiValue->new(@_);
-        }
-        else {
-            croak "Unable to coerce values";
-        }
-    },
+    coerce  => $coerce_to_hash_multivalue,
     trigger => sub { $_[0]->pristine(0) if $_[1]->keys },
     clearer => 1,
     writer  => 'set_values',

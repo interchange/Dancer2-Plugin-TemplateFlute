@@ -87,11 +87,11 @@ subtest 'form attribute types and coercion' => sub {
       "Form->new with bad action dies";
 
     like exception { Form->new( session => $session, errors => 'qq' ) },
-      qr/Unable to coerce errors/,
+      qr/Unable to coerce to Hash::MultiValue/,
       "Form->new with scalar errors dies";
 
     like exception { Form->new( session => $session, errors => 'qq' ) },
-      qr/Unable to coerce errors/,
+      qr/Unable to coerce to Hash::MultiValue/,
       "Form->new with scalar errors dies";
 
 };

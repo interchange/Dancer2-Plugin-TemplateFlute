@@ -12,15 +12,12 @@ Dancer2::Plugin::TemplateFlute::Form - form object for Template::Flute
 
 =cut
 
-my $coerce_to_hash_multivalue = sub {
+my $_coerce_to_hash_multivalue = sub {
     if ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
         $_[0];
     }
     elsif ( ref( $_[0] ) eq 'HASH' ) {
         Hash::MultiValue->from_mixed( $_[0] );
-    }
-    elsif ( @_ && !@_ % 2 ) {
-        Hash::MultiValue->new(@_);
     }
     else {
         croak "Unable to coerce to Hash::MultiValue";
@@ -43,7 +40,7 @@ has errors => (
     lazy    => 1,
     isa     => InstanceOf ['Hash::MultiValue'],
     default => sub { Hash::MultiValue->new },
-    coerce  => $coerce_to_hash_multivalue,
+    coerce  => $_coerce_to_hash_multivalue,
     clearer => 1,
     writer  => 'set_errors',
 );
@@ -65,7 +62,7 @@ after 'add_error', 'set_error', 'set_errors' => sub {
 has fields => (
     is      => 'ro',
     lazy    => 1,
-    isa     => ArrayRef,
+    isa     => ArrayRef [Str],
     default => sub { [] },
     clearer => 1,
     writer  => 'set_fields',
@@ -85,7 +82,7 @@ has name => (
 
 has pristine => (
     is      => 'ro',
-    isa     => Bool,
+    isa     => Defined & Bool,
     default => 1,
     writer  => 'set_pristine',
 );
@@ -96,6 +93,9 @@ has session => (
     required => 1,
 );
 
+# We use a private writer since we want to have to_session called whenever
+# the public set_valid method is called but we also have a need to be
+# able to update this attribute without writing the form back to the session.
 has valid => (
     is      => 'ro',
     isa     => Bool,
@@ -116,8 +116,8 @@ has values => (
     lazy    => 1,
     isa     => InstanceOf ['Hash::MultiValue'],
     default => sub { Hash::MultiValue->new },
-    coerce  => $coerce_to_hash_multivalue,
-    trigger => sub { $_[0]->pristine(0) if $_[1]->keys },
+    coerce  => $_coerce_to_hash_multivalue,
+    trigger => sub { $_[0]->set_pristine(0) if $_[1]->keys },
     clearer => 1,
     writer  => 'set_values',
 );

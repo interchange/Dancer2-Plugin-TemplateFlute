@@ -74,7 +74,7 @@ subtest 'form attribute types and coercion' => sub {
     is exception { $session = Dancer2::Core::Session->new( id => 1 ) }, undef,
       "create a session object";
 
-    is exception { $form = Form->new( session => $session ) },
+    is exception { Form->new( session => $session ) },
       undef,
       "Form->new with valid session lives";
 
@@ -90,14 +90,126 @@ subtest 'form attribute types and coercion' => sub {
       qr/Unable to coerce to Hash::MultiValue/,
       "Form->new with scalar errors dies";
 
-    like exception { Form->new( session => $session, errors => 'qq' ) },
-      qr/Unable to coerce to Hash::MultiValue/,
-      "Form->new with scalar errors dies";
+    is exception {
+        $form = Form->new(
+            session => $session,
+            errors  => Hash::MultiValue->new( a => 1, b => 1, b => 2 )
+          )
+    }, undef, "Form->new with Hash::MultiValue errors lives";
 
+    isa_ok $form->errors, "Hash::MultiValue", "errors";
+    cmp_deeply $form->errors->mixed, { a => 1, b => [ 1, 2 ] },
+      "errors are as expected";
+
+    is exception {
+        $form =
+          Form->new( session => $session, errors => { a => 1, b => [ 1, 2 ] } )
+    }, undef, "Form->new with hashref errors lives";
+
+    isa_ok $form->errors, "Hash::MultiValue", "errors";
+    cmp_deeply $form->errors->mixed, { a => 1, b => [ 1, 2 ] },
+      "errors are as expected";
+
+    like exception { Form->new( session => $session, fields => undef ) },
+      qr/Undef did not pass type constraint "ArrayRef\[Str\]"/,
+      "Form->new with undef fields dies";
+
+    like exception { Form->new( session => $session, fields => [$session] ) },
+      qr/bless.+did not pass type constraint "ArrayRef\[Str\]"/,
+      "Form->new with bad fields dies";
+
+    is exception { Form->new( session => $session, fields => [] ) },
+      undef,
+      "Form->new with empty arrayref fields lives";
+
+    is
+      exception { Form->new( session => $session, fields => [ 'one', 'two' ] ) }
+    , undef, "Form->new with filled arrayref fields lives";
+
+    like exception { Form->new( session => $session, log_cb => undef ) },
+      qr/Undef did not pass type constraint "CodeRef"/,
+      "Form->new with undef log_cb dies";
+
+    like exception { Form->new( session => $session, log_cb => {} ) },
+      qr/Reference \{\} did not pass type constraint "CodeRef"/,
+      "Form->new with bad log_cb dies";
+
+    is exception {
+        Form->new( session => $session, log_cb => sub { } )
+    }, undef, "Form->new with good log_cb lives";
+
+    like exception { Form->new( session => $session, name => undef ) },
+      qr/Undef did not pass type constraint "Str"/,
+      "Form->new with undef name dies";
+
+    like exception { Form->new( session => $session, name => {} ) },
+      qr/Reference \{\} did not pass type constraint "Str"/,
+      "Form->new with bad name dies";
+
+    is exception { $form = Form->new( session => $session, name => 'new' ) },
+      undef,
+      "Form->new with good name lives";
+    cmp_ok $form->name, 'eq', 'new', 'form name is "new"';
+
+    like exception { Form->new( session => $session, pristine => undef ) },
+      qr/Undef did not pass type constraint "Defined&Bool"/,
+      "Form->new with undef pristine dies";
+
+    like exception { Form->new( session => $session, pristine => 'string' ) },
+      qr/Value "string" did not pass type constraint "Bool"/,
+      "Form->new with bad pristine dies";
+
+    is exception { Form->new( session => $session, pristine => 0 ) },
+      undef,
+      "Form->new with pristine => 0 lives";
+
+    is exception { Form->new( session => $session, pristine => 1 ) },
+      undef,
+      "Form->new with pristine => 1 lives";
+
+    like exception { Form->new( session => $session, valid => 'string' ) },
+      qr/Value "string" did not pass type constraint "Bool"/,
+      "Form->new with bad valid dies";
+
+    is exception { Form->new( session => $session, valid => 0 ) },
+      undef,
+      "Form->new with valid => 0 lives";
+
+    is exception { Form->new( session => $session, valid => 1 ) },
+      undef,
+      "Form->new with valid => 1 lives";
+
+    is exception {
+        $form = Form->new(
+            session => $session,
+            values  => Hash::MultiValue->new( a => 1, b => 1, b => 2 )
+          )
+    }, undef, "Form->new with Hash::MultiValue values lives";
+
+    isa_ok $form->values, "Hash::MultiValue", "values";
+    cmp_deeply $form->values->mixed, { a => 1, b => [ 1, 2 ] },
+      "values are as expected";
+
+    is exception {
+        $form = Form->new(
+            session => $session,
+            values  => { a => 1, b => [ 1, 2 ] }
+          )
+    }, undef, "Form->new with hashref values lives";
+
+    isa_ok $form->values, "Hash::MultiValue", "values";
+    cmp_deeply $form->values->mixed, { a => 1, b => [ 1, 2 ] },
+      "values are as expected";
+
+    like exception { Form->new( session => $session, fields => undef ) },
+      qr/Undef did not pass type constraint "ArrayRef\[Str\]"/,
+      "Form->new with undef fields dies";
+
+    like
+      exception { Form->new( session => $session, fields => [$session] ) },
+      qr/bless.+did not pass type constraint "ArrayRef\[Str\]"/,
+      "Form->new with bad fields dies";
 };
-
-#done_testing;
-#__END__
 
 subtest 'empty form creation with add_error, set_error and reset' => sub {
 

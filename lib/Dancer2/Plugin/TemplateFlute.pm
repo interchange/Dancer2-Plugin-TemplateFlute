@@ -22,11 +22,14 @@ plugin_keywords 'form';
 
 sub form {
     my $plugin = shift;
-    my %params;
 
+    my $name;
     if ( @_ % 2 ) {
-        $params{name} = shift;
+        $name = shift;
     }
+
+    my %params = @_;
+    $params{$name} = $name if $name;
 
     my $source = delete $params{source};
 
@@ -43,7 +46,7 @@ sub form {
     }
 
     my $form = Dancer2::Plugin::TemplateFlute::Form->new(
-        log_cb  => $plugin->app->log,
+        log_cb  => sub { $plugin->app->logger_engine->log(@_) },
         session => $plugin->app->session,
         %params,
     );

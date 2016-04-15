@@ -246,10 +246,10 @@ subtest 'empty form creation with add_error, set_error and reset' => sub {
     ok $form->pristine, "form is pristine";
     cmp_ok $form->valid, '==', 0, "valid is 0";
 
-    cmp_ok @logs, '==', 1, '1 log entry' or diag explain @logs;
-    $log = pop @logs;
-    cmp_ok $log->{debug}, 'eq', 'Setting valid for form main to 0.',
+    cmp_deeply \@logs,
+      superbagof( { debug => 'Setting valid for form main to 0.' } ),
       'got "valid is 0" debug log entry';
+    @logs = ();
 
     cmp_deeply $session->read('form'),
       {
@@ -268,10 +268,10 @@ subtest 'empty form creation with add_error, set_error and reset' => sub {
 
     is exception { $form->set_valid(1) }, undef, "set valid to 1";
 
-    cmp_ok @logs, '==', 1, '1 log entry' or diag explain @logs;
-    $log = pop @logs;
-    cmp_ok $log->{debug}, 'eq', 'Setting valid for form main to 1.',
+    cmp_deeply \@logs,
+      superbagof( { debug => 'Setting valid for form main to 1.' } ),
       'got "valid is 1" debug log entry';
+    @logs = ();
 
     cmp_deeply $session->read('form'),
       {
@@ -304,10 +304,10 @@ subtest 'empty form creation with add_error, set_error and reset' => sub {
     ok $form->pristine, "form is pristine";
     cmp_ok $form->valid, '==', 0, "valid is 0";
 
-    cmp_ok @logs, '==', 1, '1 log entry' or diag explain @logs;
-    $log = pop @logs;
-    cmp_ok $log->{debug}, 'eq', 'Setting valid for form main to 0.',
+    cmp_deeply \@logs,
+      superbagof( { debug => 'Setting valid for form main to 0.' } ),
       'got "valid is 0" debug log entry';
+    @logs = ();
 
     cmp_deeply $session->read('form'),
       {
@@ -427,9 +427,10 @@ subtest 'to/from session' => sub {
     cmp_ok $form->pristine, '==', 0, 'for is no longer pristine';
     cmp_ok $form->valid,    '==', 0, "valid is 0 (not valid)";
 
-    my $log = pop @logs;
-    cmp_ok $log->{debug}, 'eq', 'Setting valid for form cart to 0.',
-      "we got the set valid debug message";
+    cmp_deeply \@logs,
+      superbagof( { debug => 'Setting valid for form cart to 0.' } ),
+      'got "valid is 0" debug log entry' or diag explain @logs;
+    @logs = ();
 
     cmp_deeply $form->errors->mixed, { one => "bad value for one" },
       "errors looks good";

@@ -8,7 +8,7 @@ MANIFEST.SKIP
 README
 t/001_load.t
 t/form.t
-t/lib/TestApp/TestApp.pm
 t/manifest.t
 t/pod.t
 t/pod-coverage.t
+t/plugin.t

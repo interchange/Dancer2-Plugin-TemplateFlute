@@ -42,7 +42,7 @@ has errors => (
     default => sub { Hash::MultiValue->new },
     coerce  => $_coerce_to_hash_multivalue,
     clearer => 1,
-    writer  => 'set_errors',
+    writer  => '_set_errors',
 );
 
 sub add_error {
@@ -53,6 +53,11 @@ sub add_error {
 sub set_error {
     my $self = shift;
     $self->errors->set(@_);
+}
+
+sub set_errors {
+    my $self = shift;
+    $self->_set_errors(@_);
 }
 
 after 'add_error', 'set_error', 'set_errors' => sub {
@@ -139,17 +144,19 @@ sub errors_hashed {
 sub from_session {
     my ($self) = @_;
 
+    $self->log( debug => "Reading form ", $self->name, " from session");
+
     if ( my $forms_ref = $self->session->read('form') ) {
         if ( exists $forms_ref->{ $self->name } ) {
             my $form = $forms_ref->{ $self->name };
 
+            # set_valid causes write back to session so use private
+            # method instead. Also set_errors causes set_valid to be
+            # called so use private method there too.
             $self->set_action( $form->{action} ) if $form->{action};
             $self->set_fields( $form->{fields} ) if $form->{fields};
-            $self->set_errors( $form->{errors} ) if $form->{errors};
+            $self->_set_errors( $form->{errors} ) if $form->{errors};
             $self->fill( $form->{values} )       if $form->{values};
-
-            # set_valid causes write back to session so use private
-            # method instead
             $self->_set_valid( $form->{valid} ) if defined $form->{valid};
 
             return 1;
@@ -159,8 +166,8 @@ sub from_session {
 }
 
 sub log {
-    my $self = shift;
-    $self->log_cb->(@_) if $self->has_log_cb;
+    my ($self, $level, @message) = @_;
+    $self->log_cb->($level, join('',@message)) if $self->has_log_cb;
 }
 
 sub reset {
@@ -176,6 +183,8 @@ sub reset {
 sub to_session {
     my $self = shift;
     my ($forms_ref);
+
+    $self->log( debug => "Writing form ", $self->name, " to session");
 
     # get current form information from session
     $forms_ref = $self->session->read('form');
@@ -262,7 +271,7 @@ Get form fields:
 
 A code reference that can be used to log things. Signature must be like:
 
-  $log_cb->( $form_obj, $level, @message );
+  $log_cb->( $level, $message );
 
 Logging is via L</log> method.
 

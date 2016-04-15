@@ -1,10 +1,10 @@
 {
-   "abstract" : "Module abstract (<= 44 characters) goes here",
+   "abstract" : "Dancer2 form handler for Template::Flute template engine",
    "author" : [
       "Evan Brown (evan@bottlenose-wine.com)"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "ExtUtils::MakeMaker version 7.04, CPAN::Meta::Converter version 2.142690",
+   "generated_by" : "ExtUtils::MakeMaker version 7.1, CPAN::Meta::Converter version 2.150005",
    "license" : [
       "unknown"
    ],
@@ -12,7 +12,7 @@
       "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",
       "version" : "2"
    },
-   "name" : "Dancer2-Plugin-Form",
+   "name" : "Dancer2-Plugin-TemplateFlute",
    "no_index" : {
       "directory" : [
          "t",
@@ -22,7 +22,11 @@
    "prereqs" : {
       "build" : {
          "requires" : {
-            "ExtUtils::MakeMaker" : "0"
+            "JSON::MaybeXS" : "0",
+            "Test::Deep" : "0",
+            "Test::Fatal" : "0",
+            "Test::More" : "0.94",
+            "aliased" : "0"
          }
       },
       "configure" : {
@@ -32,10 +36,17 @@
       },
       "runtime" : {
          "requires" : {
-            "Test::Simple" : "0.44"
+            "Carp" : "0",
+            "Dancer2" : "0.159002",
+            "Dancer2::Plugin" : "0.159002",
+            "Hash::MultiValue" : "0.12",
+            "Moo" : "2.000000",
+            "Type::Tiny" : "0",
+            "namespace::clean" : "0"
          }
       }
    },
    "release_status" : "stable",
-   "version" : "0.01"
+   "version" : "0.0002",
+   "x_serialization_backend" : "JSON::PP version 2.27203"
 }

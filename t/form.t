@@ -4,12 +4,12 @@ use Test::More;
 use Test::Deep;
 use Test::Fatal;
 use Dancer2::Core::Session;
+use Hash::MultiValue;
 use aliased 'Dancer2::Plugin::TemplateFlute::Form';
-use DDP;
 
-my ( $form, $session, $log, @logs );
+my ( $form, $log, @logs );
 
-# test fixtures
+# fixtures
 
 {
 
@@ -42,11 +42,9 @@ my $log_cb = sub {
     push @logs, { $level => $message };
 };
 
-is exception { $session = Dancer2::Core::Session->new( id => 1 ) }, undef,
-  "create a session object";
+my $session = Dancer2::Core::Session->new( id => 1 );
 
 subtest 'form attribute types and coercion' => sub {
-    my $session;
 
     like exception { Form->new }, qr/Missing required arguments: session at/,
       "Form->new with no args dies";
@@ -70,9 +68,6 @@ subtest 'form attribute types and coercion' => sub {
     is exception { Form->new( session => TestObjReadAndWrite->new ) },
       undef,
       "Form->new with session TestObjReadAndWrite lives";
-
-    is exception { $session = Dancer2::Core::Session->new( id => 1 ) }, undef,
-      "create a session object";
 
     is exception { Form->new( session => $session ) },
       undef,
@@ -212,8 +207,8 @@ subtest 'form attribute types and coercion' => sub {
 };
 
 subtest 'empty form creation with add_error, set_error and reset' => sub {
-
     @logs = ();
+    $session->delete('form');
 
     is
       exception { $form = Form->new( log_cb => $log_cb, session => $session ) },
@@ -259,11 +254,12 @@ subtest 'empty form creation with add_error, set_error and reset' => sub {
     cmp_deeply $session->read('form'),
       {
         main => {
+            action => undef,
             errors => { foo => "bar" },
             fields => [],
             name   => "main",
             valid  => 0,
-            values => {}
+            values => {},
         },
       },
       "form in session looks good";
@@ -280,11 +276,12 @@ subtest 'empty form creation with add_error, set_error and reset' => sub {
     cmp_deeply $session->read('form'),
       {
         main => {
+            action => undef,
             errors => { foo => "bar" },
             fields => [],
             name   => "main",
             valid  => 1,
-            values => {}
+            values => {},
         },
       },
       "form in session looks good";
@@ -315,11 +312,12 @@ subtest 'empty form creation with add_error, set_error and reset' => sub {
     cmp_deeply $session->read('form'),
       {
         main => {
+            action => undef,
             errors => { buzz => bag( "one", "two", "three" ), foo => "bar" },
             fields => [],
             name   => "main",
             valid  => 0,
-            values => {}
+            values => {},
         },
       },
       "form in session looks good";
@@ -343,14 +341,98 @@ subtest 'empty form creation with add_error, set_error and reset' => sub {
     cmp_deeply $session->read('form'),
       {
         main => {
+            action => undef,
             errors => {},
             fields => [],
             name   => "main",
             valid  => undef,
-            values => {}
+            values => {},
         },
       },
       "form in session looks good";
+};
+
+subtest 'to/from session' => sub {
+    $session->delete('form');
+
+    is exception {
+        $form = Form->new(
+            action  => '/cart',
+            fields  => [qw/one two three/],
+            log_cb  => $log_cb,
+            name    => 'cart',
+            session => $session
+          )
+    }, undef, "Form->new with action, fields, log_cb, name and session lives";
+
+    cmp_ok $form->pristine, '==', 1, "form is pristine";
+
+    ok !defined $form->valid, "valid is undef";
+
+    ok !defined $session->read('form'), "form not yet in session"
+      or diag explain $session;
+
+    is exception {
+        $form->fill( { one => 'foo', two => 'bar', three => 'buzz' } )
+    }, undef, "fill the form";
+
+    cmp_ok $form->pristine, '==', 0, "form is no longer pristine";
+
+    ok !defined $form->valid, "valid is undef";
+
+    ok !defined $session->read('form'), "form is still not in session"
+      or diag explain $session;
+
+    is exception { $form->add_error( one => "bad value for one" ) }, undef,
+      "add_error lives";
+
+    cmp_ok $form->valid, '==', 0, "valid is 0 (not valid)";
+
+    ok defined $session->read('form'), "form is now in the session"
+      or diag explain $session;
+
+    cmp_deeply $session->read('form'),
+      {
+        cart => {
+            action => '/cart',
+            errors => { one => "bad value for one" },
+            fields => [ "one", "two", "three" ],
+            name   => "cart",
+            valid  => 0,
+            values => { one => 'foo', two => 'bar', three => 'buzz' },
+        },
+      },
+      "form in session looks good"
+      or diag explain $session;
+
+    is exception {
+        $form = Form->new(
+            log_cb  => $log_cb,
+            name    => 'cart',
+            session => $session
+          )
+    }, undef, "Form->new with log_cb, name and session lives";
+
+    cmp_ok $form->errors->keys, '==', 0, 'no errors';
+    cmp_ok @{ $form->fields }, '==', 0, 'no fields';
+    cmp_ok $form->values->keys, '==', 0, 'no values';
+    cmp_ok $form->pristine, '==', 1, 'for is pristine';
+    ok !defined $form->valid, "valid is undef";
+
+    is exception { $form->from_session }, undef, "from_session lives";
+
+    cmp_ok $form->errors->keys, '==', 1, '1 error';
+    cmp_ok @{ $form->fields }, '==', 3, '3 fields';
+    cmp_ok $form->values->keys, '==', 3, '3 values';
+    cmp_ok $form->pristine, '==', 0, 'for is no longer pristine';
+    cmp_ok $form->valid,    '==', 0, "valid is 0 (not valid)";
+
+    my $log = pop @logs;
+    cmp_ok $log->{debug}, 'eq', 'Setting valid for form cart to 0.',
+      "we got the set valid debug message";
+
+    cmp_deeply $form->errors->mixed, { one => "bad value for one" },
+      "errors looks good";
 };
 
 done_testing;

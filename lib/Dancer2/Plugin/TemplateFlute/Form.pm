@@ -119,7 +119,7 @@ has values => (
     coerce  => $_coerce_to_hash_multivalue,
     trigger => sub { $_[0]->set_pristine(0) if $_[1]->keys },
     clearer => 1,
-    writer  => 'set_values',
+    writer  => 'fill',
 );
 
 #
@@ -143,13 +143,14 @@ sub from_session {
         if ( exists $forms_ref->{ $self->name } ) {
             my $form = $forms_ref->{ $self->name };
 
-            $self->set_fields( $form->fields ) if $form->fields;
-            $self->set_errors( $form->errors ) if $form->errors;
-            $self->fill( $form->values )       if $form->values;
+            $self->set_action( $form->{action} ) if $form->{action};
+            $self->set_fields( $form->{fields} ) if $form->{fields};
+            $self->set_errors( $form->{errors} ) if $form->{errors};
+            $self->fill( $form->{values} )       if $form->{values};
 
             # set_valid causes write back to session so use private
             # method instead
-            $self->_set_valid( $form->valid ) if defined $form->valid;
+            $self->_set_valid( $form->{valid} ) if defined $form->{valid};
 
             return 1;
         }
@@ -181,6 +182,7 @@ sub to_session {
 
     # update our form
     $forms_ref->{ $self->name } = {
+        action => $self->action,
         name   => $self->name,
         fields => $self->fields,
         errors => $self->errors->mixed,
@@ -263,6 +265,12 @@ A code reference that can be used to log things. Signature must be like:
   $log_cb->( $form_obj, $level, @message );
 
 Logging is via L</log> method.
+
+=over
+
+=item predicate: has_log_cb
+
+=back
 
 =head2 pristine
 

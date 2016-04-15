@@ -1,7 +1,7 @@
-# This Makefile is for the Dancer2::Plugin::Form extension to perl.
+# This Makefile is for the Dancer2::Plugin::TemplateFlute extension to perl.
 #
 # It was generated automatically by MakeMaker version
-# 7.04 (Revision: 70400) from the contents of
+# 7.1 (Revision: 71000) from the contents of
 # Makefile.PL. Don't edit this file, edit Makefile.PL instead.
 #
 #       ANY CHANGES MADE HERE WILL BE LOST!
@@ -11,21 +11,21 @@
 
 #   MakeMaker Parameters:
 
-#     ABSTRACT => q[Module abstract (<= 44 characters) goes here]
+#     ABSTRACT_FROM => q[lib/Dancer2/Plugin/TemplateFlute.pm]
 #     AUTHOR => [q[Evan Brown (evan@bottlenose-wine.com)]]
-#     BUILD_REQUIRES => {  }
+#     BUILD_REQUIRES => { JSON::MaybeXS=>q[0], Test::Deep=>q[0], Test::Fatal=>q[0], Test::More=>q[0.94], aliased=>q[0] }
 #     CONFIGURE_REQUIRES => {  }
-#     NAME => q[Dancer2::Plugin::Form]
-#     PREREQ_PM => { Test::Simple=>q[0.44] }
+#     NAME => q[Dancer2::Plugin::TemplateFlute]
+#     PREREQ_PM => { Carp=>q[0], Dancer2=>q[0.159002], Dancer2::Plugin=>q[0.159002], Hash::MultiValue=>q[0.12], JSON::MaybeXS=>q[0], Moo=>q[2.000000], Test::Deep=>q[0], Test::Fatal=>q[0], Test::More=>q[0.94], Type::Tiny=>q[0], aliased=>q[0], namespace::clean=>q[0] }
 #     TEST_REQUIRES => {  }
-#     VERSION_FROM => q[lib/Dancer2/Plugin/Form.pm]
+#     VERSION_FROM => q[lib/Dancer2/Plugin/TemplateFlute.pm]
 
 # --- MakeMaker post_initialize section:
 
 
 # --- MakeMaker const_config section:
 
-# These definitions are from config.sh (via /usr/lib/perl/5.18/Config.pm).
+# These definitions are from config.sh (via /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/5.20.3/x86_64-linux/Config.pm).
 # They may have been overridden via Makefile.PL or on the command line.
 AR = ar
 CC = cc
@@ -36,32 +36,32 @@ DLSRC = dl_dlopen.xs
 EXE_EXT = 
 FULL_AR = /usr/bin/ar
 LD = cc
-LDDLFLAGS = -shared -L/usr/local/lib -fstack-protector
+LDDLFLAGS = -shared -O2 -L/usr/local/lib -fstack-protector
 LDFLAGS =  -fstack-protector -L/usr/local/lib
-LIBC = 
+LIBC = libc-2.19.so
 LIB_EXT = .a
 OBJ_EXT = .o
 OSNAME = linux
-OSVERS = 3.2.0-58-generic
+OSVERS = 3.16.0-4-amd64
 RANLIB = :
-SITELIBEXP = /usr/local/share/perl/5.18.2
-SITEARCHEXP = /usr/local/lib/perl/5.18.2
+SITELIBEXP = /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/site_perl/5.20.3
+SITEARCHEXP = /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/site_perl/5.20.3/x86_64-linux
 SO = so
-VENDORARCHEXP = /usr/lib/perl5
-VENDORLIBEXP = /usr/share/perl5
+VENDORARCHEXP = 
+VENDORLIBEXP = 
 
 
 # --- MakeMaker constants section:
 AR_STATIC_ARGS = cr
 DIRFILESEP = /
 DFSEP = $(DIRFILESEP)
-NAME = Dancer2::Plugin::Form
-NAME_SYM = Dancer2_Plugin_Form
-VERSION = 0.01
+NAME = Dancer2::Plugin::TemplateFlute
+NAME_SYM = Dancer2_Plugin_TemplateFlute
+VERSION = 0.0002
 VERSION_MACRO = VERSION
-VERSION_SYM = 0_01
+VERSION_SYM = 0_0002
 DEFINE_VERSION = -D$(VERSION_MACRO)=\"$(VERSION)\"
-XS_VERSION = 0.01
+XS_VERSION = 0.0002
 XS_VERSION_MACRO = XS_VERSION
 XS_DEFINE_VERSION = -D$(XS_VERSION_MACRO)=\"$(XS_VERSION)\"
 INST_ARCHLIB = blib/arch
@@ -70,62 +70,60 @@ INST_BIN = blib/bin
 INST_LIB = blib/lib
 INST_MAN1DIR = blib/man1
 INST_MAN3DIR = blib/man3
-MAN1EXT = 1p
-MAN3EXT = 3pm
+MAN1EXT = 1
+MAN3EXT = 3
 INSTALLDIRS = site
+INSTALL_BASE = /home/apm/.perlbrew/libs/perl-5.20.3@main
 DESTDIR = 
-PREFIX = $(SITEPREFIX)
-PERLPREFIX = /usr
-SITEPREFIX = /usr/local
-VENDORPREFIX = /usr
-INSTALLPRIVLIB = /usr/share/perl/5.18
+PREFIX = $(INSTALL_BASE)
+INSTALLPRIVLIB = $(INSTALL_BASE)/lib/perl5
 DESTINSTALLPRIVLIB = $(DESTDIR)$(INSTALLPRIVLIB)
-INSTALLSITELIB = /usr/local/share/perl/5.18.2
+INSTALLSITELIB = $(INSTALL_BASE)/lib/perl5
 DESTINSTALLSITELIB = $(DESTDIR)$(INSTALLSITELIB)
-INSTALLVENDORLIB = /usr/share/perl5
+INSTALLVENDORLIB = $(INSTALL_BASE)/lib/perl5
 DESTINSTALLVENDORLIB = $(DESTDIR)$(INSTALLVENDORLIB)
-INSTALLARCHLIB = /usr/lib/perl/5.18
+INSTALLARCHLIB = $(INSTALL_BASE)/lib/perl5/x86_64-linux
 DESTINSTALLARCHLIB = $(DESTDIR)$(INSTALLARCHLIB)
-INSTALLSITEARCH = /usr/local/lib/perl/5.18.2
+INSTALLSITEARCH = $(INSTALL_BASE)/lib/perl5/x86_64-linux
 DESTINSTALLSITEARCH = $(DESTDIR)$(INSTALLSITEARCH)
-INSTALLVENDORARCH = /usr/lib/perl5
+INSTALLVENDORARCH = $(INSTALL_BASE)/lib/perl5/x86_64-linux
 DESTINSTALLVENDORARCH = $(DESTDIR)$(INSTALLVENDORARCH)
-INSTALLBIN = /usr/bin
+INSTALLBIN = $(INSTALL_BASE)/bin
 DESTINSTALLBIN = $(DESTDIR)$(INSTALLBIN)
-INSTALLSITEBIN = /usr/local/bin
+INSTALLSITEBIN = $(INSTALL_BASE)/bin
 DESTINSTALLSITEBIN = $(DESTDIR)$(INSTALLSITEBIN)
-INSTALLVENDORBIN = /usr/bin
+INSTALLVENDORBIN = $(INSTALL_BASE)/bin
 DESTINSTALLVENDORBIN = $(DESTDIR)$(INSTALLVENDORBIN)
-INSTALLSCRIPT = /usr/bin
+INSTALLSCRIPT = $(INSTALL_BASE)/bin
 DESTINSTALLSCRIPT = $(DESTDIR)$(INSTALLSCRIPT)
-INSTALLSITESCRIPT = /usr/local/bin
+INSTALLSITESCRIPT = $(INSTALL_BASE)/bin
 DESTINSTALLSITESCRIPT = $(DESTDIR)$(INSTALLSITESCRIPT)
-INSTALLVENDORSCRIPT = /usr/bin
+INSTALLVENDORSCRIPT = $(INSTALL_BASE)/bin
 DESTINSTALLVENDORSCRIPT = $(DESTDIR)$(INSTALLVENDORSCRIPT)
-INSTALLMAN1DIR = /usr/share/man/man1
+INSTALLMAN1DIR = $(INSTALL_BASE)/man/man1
 DESTINSTALLMAN1DIR = $(DESTDIR)$(INSTALLMAN1DIR)
-INSTALLSITEMAN1DIR = /usr/local/man/man1
+INSTALLSITEMAN1DIR = $(INSTALL_BASE)/man/man1
 DESTINSTALLSITEMAN1DIR = $(DESTDIR)$(INSTALLSITEMAN1DIR)
-INSTALLVENDORMAN1DIR = /usr/share/man/man1
+INSTALLVENDORMAN1DIR = $(INSTALL_BASE)/man/man1
 DESTINSTALLVENDORMAN1DIR = $(DESTDIR)$(INSTALLVENDORMAN1DIR)
-INSTALLMAN3DIR = /usr/share/man/man3
+INSTALLMAN3DIR = $(INSTALL_BASE)/man/man3
 DESTINSTALLMAN3DIR = $(DESTDIR)$(INSTALLMAN3DIR)
-INSTALLSITEMAN3DIR = /usr/local/man/man3
+INSTALLSITEMAN3DIR = $(INSTALL_BASE)/man/man3
 DESTINSTALLSITEMAN3DIR = $(DESTDIR)$(INSTALLSITEMAN3DIR)
-INSTALLVENDORMAN3DIR = /usr/share/man/man3
+INSTALLVENDORMAN3DIR = $(INSTALL_BASE)/man/man3
 DESTINSTALLVENDORMAN3DIR = $(DESTDIR)$(INSTALLVENDORMAN3DIR)
-PERL_LIB = /usr/share/perl/5.18
-PERL_ARCHLIB = /usr/lib/perl/5.18
-PERL_ARCHLIBDEP = /usr/lib/perl/5.18
+PERL_LIB = /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/5.20.3
+PERL_ARCHLIB = /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/5.20.3/x86_64-linux
+PERL_ARCHLIBDEP = /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/5.20.3/x86_64-linux
 LIBPERL_A = libperl.a
 FIRST_MAKEFILE = Makefile
 MAKEFILE_OLD = Makefile.old
 MAKE_APERL_FILE = Makefile.aperl
 PERLMAINCC = $(CC)
-PERL_INC = /usr/lib/perl/5.18/CORE
-PERL_INCDEP = /usr/lib/perl/5.18/CORE
-PERL = "/usr/bin/perl"
-FULLPERL = "/usr/bin/perl"
+PERL_INC = /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/5.20.3/x86_64-linux/CORE
+PERL_INCDEP = /home/apm/perl5/perlbrew/perls/perl-5.20.3/lib/5.20.3/x86_64-linux/CORE
+PERL = "/home/apm/perl5/perlbrew/perls/perl-5.20.3/bin/perl"
+FULLPERL = "/home/apm/perl5/perlbrew/perls/perl-5.20.3/bin/perl"
 ABSPERL = $(PERL)
 PERLRUN = $(PERL)
 FULLPERLRUN = $(FULLPERL)
@@ -138,20 +136,20 @@ PERM_DIR = 755
 PERM_RW = 644
 PERM_RWX = 755
 
-MAKEMAKER   = /usr/local/share/perl/5.18.2/ExtUtils/MakeMaker.pm
-MM_VERSION  = 7.04
-MM_REVISION = 70400
+MAKEMAKER   = /home/apm/.perlbrew/libs/perl-5.20.3@main/lib/perl5/ExtUtils/MakeMaker.pm
+MM_VERSION  = 7.1
+MM_REVISION = 71000
 
 # FULLEXT = Pathname for extension directory (eg Foo/Bar/Oracle).
 # BASEEXT = Basename part of FULLEXT. May be just equal FULLEXT. (eg Oracle)
 # PARENT_NAME = NAME without BASEEXT and no trailing :: (eg Foo::Bar)
 # DLBASE  = Basename part of dynamic library. May be just equal BASEEXT.
 MAKE = make
-FULLEXT = Dancer2/Plugin/Form
-BASEEXT = Form
+FULLEXT = Dancer2/Plugin/TemplateFlute
+BASEEXT = TemplateFlute
 PARENT_NAME = Dancer2::Plugin
 DLBASE = $(BASEEXT)
-VERSION_FROM = lib/Dancer2/Plugin/Form.pm
+VERSION_FROM = lib/Dancer2/Plugin/TemplateFlute.pm
 OBJECT = 
 LDFROM = $(OBJECT)
 LINKTYPE = dynamic
@@ -163,7 +161,8 @@ C_FILES  =
 O_FILES  = 
 H_FILES  = 
 MAN1PODS = 
-MAN3PODS = lib/Dancer2/Plugin/Form.pm
+MAN3PODS = lib/Dancer2/Plugin/TemplateFlute.pm \
+	lib/Dancer2/Plugin/TemplateFlute/Form.pm
 
 # Where is the Config information that we are using/depend on
 CONFIGDEP = $(PERL_ARCHLIBDEP)$(DFSEP)Config.pm $(PERL_INCDEP)$(DFSEP)config.h
@@ -186,14 +185,17 @@ PERL_ARCHIVEDEP    =
 PERL_ARCHIVE_AFTER = 
 
 
-TO_INST_PM = lib/Dancer2/Plugin/Form.pm
+TO_INST_PM = lib/Dancer2/Plugin/TemplateFlute.pm \
+	lib/Dancer2/Plugin/TemplateFlute/Form.pm
 
-PM_TO_BLIB = lib/Dancer2/Plugin/Form.pm \
-	blib/lib/Dancer2/Plugin/Form.pm
+PM_TO_BLIB = lib/Dancer2/Plugin/TemplateFlute.pm \
+	blib/lib/Dancer2/Plugin/TemplateFlute.pm \
+	lib/Dancer2/Plugin/TemplateFlute/Form.pm \
+	blib/lib/Dancer2/Plugin/TemplateFlute/Form.pm
 
 
 # --- MakeMaker platform_constants section:
-MM_Unix_VERSION = 7.04
+MM_Unix_VERSION = 7.1
 PERL_MALLOC_DEF = -DPERL_EXTMALLOC_DEF -Dmalloc=Perl_malloc -Dfree=Perl_mfree -Drealloc=Perl_realloc -Dcalloc=Perl_calloc
 
 
@@ -258,8 +260,8 @@ CI = ci -u
 RCS_LABEL = rcs -Nv$(VERSION_SYM): -q
 DIST_CP = best
 DIST_DEFAULT = tardist
-DISTNAME = Dancer2-Plugin-Form
-DISTVNAME = Dancer2-Plugin-Form-0.01
+DISTNAME = Dancer2-Plugin-TemplateFlute
+DISTVNAME = Dancer2-Plugin-TemplateFlute-0.0002
 
 
 # --- MakeMaker macro section:
@@ -284,7 +286,8 @@ DISTVNAME = Dancer2-Plugin-Form-0.01
 
 PASTHRU = LIBPERL_A="$(LIBPERL_A)"\
 	LINKTYPE="$(LINKTYPE)"\
-	PREFIX="$(PREFIX)"
+	PREFIX="$(PREFIX)"\
+	INSTALL_BASE="$(INSTALL_BASE)"
 
 
 # --- MakeMaker special_targets section:
@@ -412,9 +415,11 @@ POD2MAN = $(POD2MAN_EXE)
 
 
 manifypods : pure_all  \
-	lib/Dancer2/Plugin/Form.pm
+	lib/Dancer2/Plugin/TemplateFlute.pm \
+	lib/Dancer2/Plugin/TemplateFlute/Form.pm
 	$(NOECHO) $(POD2MAN) --section=3 --perm_rw=$(PERM_RW) -u \
-	  lib/Dancer2/Plugin/Form.pm $(INST_MAN3DIR)/Dancer2::Plugin::Form.$(MAN3EXT) 
+	  lib/Dancer2/Plugin/TemplateFlute.pm $(INST_MAN3DIR)/Dancer2::Plugin::TemplateFlute.$(MAN3EXT) \
+	  lib/Dancer2/Plugin/TemplateFlute/Form.pm $(INST_MAN3DIR)/Dancer2::Plugin::TemplateFlute::Form.$(MAN3EXT) 
 
 
 
@@ -472,7 +477,7 @@ realclean_subdirs :
 # Delete temporary files (via clean) and also delete dist files
 realclean purge ::  clean realclean_subdirs
 	- $(RM_F) \
-	  $(MAKEFILE_OLD) $(FIRST_MAKEFILE) 
+	  $(FIRST_MAKEFILE) $(MAKEFILE_OLD) 
 	- $(RM_RF) \
 	  $(DISTVNAME) 
 
@@ -481,36 +486,47 @@ realclean purge ::  clean realclean_subdirs
 metafile : create_distdir
 	$(NOECHO) $(ECHO) Generating META.yml
 	$(NOECHO) $(ECHO) '---' > META_new.yml
-	$(NOECHO) $(ECHO) 'abstract: '\''Module abstract (<= 44 characters) goes here'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'abstract: '\''Dancer2 form handler for Template::Flute template engine'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'author:' >> META_new.yml
 	$(NOECHO) $(ECHO) '  - '\''Evan Brown (evan@bottlenose-wine.com)'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'build_requires:' >> META_new.yml
-	$(NOECHO) $(ECHO) '  ExtUtils::MakeMaker: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  JSON::MaybeXS: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Test::Deep: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Test::Fatal: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Test::More: '\''0.94'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  aliased: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'configure_requires:' >> META_new.yml
 	$(NOECHO) $(ECHO) '  ExtUtils::MakeMaker: '\''0'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'dynamic_config: 1' >> META_new.yml
-	$(NOECHO) $(ECHO) 'generated_by: '\''ExtUtils::MakeMaker version 7.04, CPAN::Meta::Converter version 2.142690'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'generated_by: '\''ExtUtils::MakeMaker version 7.1, CPAN::Meta::Converter version 2.150005'\''' >> META_new.yml
 	$(NOECHO) $(ECHO) 'license: unknown' >> META_new.yml
 	$(NOECHO) $(ECHO) 'meta-spec:' >> META_new.yml
 	$(NOECHO) $(ECHO) '  url: http://module-build.sourceforge.net/META-spec-v1.4.html' >> META_new.yml
 	$(NOECHO) $(ECHO) '  version: '\''1.4'\''' >> META_new.yml
-	$(NOECHO) $(ECHO) 'name: Dancer2-Plugin-Form' >> META_new.yml
+	$(NOECHO) $(ECHO) 'name: Dancer2-Plugin-TemplateFlute' >> META_new.yml
 	$(NOECHO) $(ECHO) 'no_index:' >> META_new.yml
 	$(NOECHO) $(ECHO) '  directory:' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - t' >> META_new.yml
 	$(NOECHO) $(ECHO) '    - inc' >> META_new.yml
 	$(NOECHO) $(ECHO) 'requires:' >> META_new.yml
-	$(NOECHO) $(ECHO) '  Test::Simple: '\''0.44'\''' >> META_new.yml
-	$(NOECHO) $(ECHO) 'version: '\''0.01'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Carp: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Dancer2: '\''0.159002'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Dancer2::Plugin: '\''0.159002'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Hash::MultiValue: '\''0.12'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Moo: '\''2.000000'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  Type::Tiny: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) '  namespace::clean: '\''0'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'version: '\''0.0002'\''' >> META_new.yml
+	$(NOECHO) $(ECHO) 'x_serialization_backend: '\''CPAN::Meta::YAML version 0.012'\''' >> META_new.yml
 	-$(NOECHO) $(MV) META_new.yml $(DISTVNAME)/META.yml
 	$(NOECHO) $(ECHO) Generating META.json
 	$(NOECHO) $(ECHO) '{' > META_new.json
-	$(NOECHO) $(ECHO) '   "abstract" : "Module abstract (<= 44 characters) goes here",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "abstract" : "Dancer2 form handler for Template::Flute template engine",' >> META_new.json
 	$(NOECHO) $(ECHO) '   "author" : [' >> META_new.json
 	$(NOECHO) $(ECHO) '      "Evan Brown (evan@bottlenose-wine.com)"' >> META_new.json
 	$(NOECHO) $(ECHO) '   ],' >> META_new.json
 	$(NOECHO) $(ECHO) '   "dynamic_config" : 1,' >> META_new.json
-	$(NOECHO) $(ECHO) '   "generated_by" : "ExtUtils::MakeMaker version 7.04, CPAN::Meta::Converter version 2.142690",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "generated_by" : "ExtUtils::MakeMaker version 7.1, CPAN::Meta::Converter version 2.150005",' >> META_new.json
 	$(NOECHO) $(ECHO) '   "license" : [' >> META_new.json
 	$(NOECHO) $(ECHO) '      "unknown"' >> META_new.json
 	$(NOECHO) $(ECHO) '   ],' >> META_new.json
@@ -518,7 +534,7 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '      "url" : "http://search.cpan.org/perldoc?CPAN::Meta::Spec",' >> META_new.json
 	$(NOECHO) $(ECHO) '      "version" : "2"' >> META_new.json
 	$(NOECHO) $(ECHO) '   },' >> META_new.json
-	$(NOECHO) $(ECHO) '   "name" : "Dancer2-Plugin-Form",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "name" : "Dancer2-Plugin-TemplateFlute",' >> META_new.json
 	$(NOECHO) $(ECHO) '   "no_index" : {' >> META_new.json
 	$(NOECHO) $(ECHO) '      "directory" : [' >> META_new.json
 	$(NOECHO) $(ECHO) '         "t",' >> META_new.json
@@ -528,7 +544,11 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '   "prereqs" : {' >> META_new.json
 	$(NOECHO) $(ECHO) '      "build" : {' >> META_new.json
 	$(NOECHO) $(ECHO) '         "requires" : {' >> META_new.json
-	$(NOECHO) $(ECHO) '            "ExtUtils::MakeMaker" : "0"' >> META_new.json
+	$(NOECHO) $(ECHO) '            "JSON::MaybeXS" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Test::Deep" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Test::Fatal" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Test::More" : "0.94",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "aliased" : "0"' >> META_new.json
 	$(NOECHO) $(ECHO) '         }' >> META_new.json
 	$(NOECHO) $(ECHO) '      },' >> META_new.json
 	$(NOECHO) $(ECHO) '      "configure" : {' >> META_new.json
@@ -538,12 +558,19 @@ metafile : create_distdir
 	$(NOECHO) $(ECHO) '      },' >> META_new.json
 	$(NOECHO) $(ECHO) '      "runtime" : {' >> META_new.json
 	$(NOECHO) $(ECHO) '         "requires" : {' >> META_new.json
-	$(NOECHO) $(ECHO) '            "Test::Simple" : "0.44"' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Carp" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Dancer2" : "0.159002",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Dancer2::Plugin" : "0.159002",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Hash::MultiValue" : "0.12",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Moo" : "2.000000",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "Type::Tiny" : "0",' >> META_new.json
+	$(NOECHO) $(ECHO) '            "namespace::clean" : "0"' >> META_new.json
 	$(NOECHO) $(ECHO) '         }' >> META_new.json
 	$(NOECHO) $(ECHO) '      }' >> META_new.json
 	$(NOECHO) $(ECHO) '   },' >> META_new.json
 	$(NOECHO) $(ECHO) '   "release_status" : "stable",' >> META_new.json
-	$(NOECHO) $(ECHO) '   "version" : "0.01"' >> META_new.json
+	$(NOECHO) $(ECHO) '   "version" : "0.0002",' >> META_new.json
+	$(NOECHO) $(ECHO) '   "x_serialization_backend" : "JSON::PP version 2.27203"' >> META_new.json
 	$(NOECHO) $(ECHO) '}' >> META_new.json
 	-$(NOECHO) $(MV) META_new.json $(DISTVNAME)/META.json
 
@@ -631,12 +658,12 @@ disttest : distdir
 
 
 # --- MakeMaker dist_ci section:
-
 ci :
-	$(PERLRUN) "-MExtUtils::Manifest=maniread" \
-	  -e "@all = keys %{ maniread() };" \
-	  -e "print(qq{Executing $(CI) @all\n}); system(qq{$(CI) @all});" \
-	  -e "print(qq{Executing $(RCS_LABEL) ...\n}); system(qq{$(RCS_LABEL) @all});"
+	$(ABSPERLRUN) -MExtUtils::Manifest=maniread -e '@all = sort keys %{ maniread() };' \
+	  -e 'print(qq{Executing $(CI) @all\n});' \
+	  -e 'system(qq{$(CI) @all}) == 0 or die $$!;' \
+	  -e 'print(qq{Executing $(RCS_LABEL) ...\n});' \
+	  -e 'system(qq{$(RCS_LABEL) @all}) == 0 or die $$!;' --
 
 
 # --- MakeMaker distmeta section:
@@ -651,7 +678,7 @@ distmeta : create_distdir metafile
 
 
 # --- MakeMaker distsignature section:
-distsignature : create_distdir
+distsignature : distmeta
 	$(NOECHO) cd $(DISTVNAME) && $(ABSPERLRUN) -MExtUtils::Manifest=maniadd -e 'eval { maniadd({q{SIGNATURE} => q{Public-key signature (added by MakeMaker)}}) }' \
 	  -e '    or print "Could not add SIGNATURE to MANIFEST: $$$${'\''@'\''}\n"' --
 	$(NOECHO) cd $(DISTVNAME) && $(TOUCH) SIGNATURE
@@ -800,7 +827,7 @@ $(FIRST_MAKEFILE) : Makefile.PL $(CONFIGDEP)
 
 # --- MakeMaker makeaperl section ---
 MAP_TARGET    = perl
-FULLPERL      = "/usr/bin/perl"
+FULLPERL      = "/home/apm/perl5/perlbrew/perls/perl-5.20.3/bin/perl"
 
 $(MAP_TARGET) :: static $(MAKE_APERL_FILE)
 	$(MAKE) $(USEMAKEFILE) $(MAKE_APERL_FILE) $@
@@ -845,11 +872,17 @@ testdb_static :: testdb_dynamic
 # Creates a PPD (Perl Package Description) for a binary distribution.
 ppd :
 	$(NOECHO) $(ECHO) '<SOFTPKG NAME="$(DISTNAME)" VERSION="$(VERSION)">' > $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '    <ABSTRACT>Module abstract (&lt;= 44 characters) goes here</ABSTRACT>' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '    <ABSTRACT>Dancer2 form handler for Template::Flute template engine</ABSTRACT>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <AUTHOR>Evan Brown (evan@bottlenose-wine.com)</AUTHOR>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    <IMPLEMENTATION>' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Test::Simple" VERSION="0.44" />' >> $(DISTNAME).ppd
-	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="x86_64-linux-gnu-thread-multi-5.18" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Carp::" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Dancer2::" VERSION="0.159002" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Dancer2::Plugin" VERSION="0.159002" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Hash::MultiValue" VERSION="0.12" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Moo::" VERSION="2.000000" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="Type::Tiny" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <REQUIRE NAME="namespace::clean" />' >> $(DISTNAME).ppd
+	$(NOECHO) $(ECHO) '        <ARCHITECTURE NAME="x86_64-linux-5.20" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '        <CODEBASE HREF="" />' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '    </IMPLEMENTATION>' >> $(DISTNAME).ppd
 	$(NOECHO) $(ECHO) '</SOFTPKG>' >> $(DISTNAME).ppd
@@ -859,7 +892,8 @@ ppd :
 
 pm_to_blib : $(FIRST_MAKEFILE) $(TO_INST_PM)
 	$(NOECHO) $(ABSPERLRUN) -MExtUtils::Install -e 'pm_to_blib({@ARGV}, '\''$(INST_LIB)/auto'\'', q[$(PM_FILTER)], '\''$(PERM_DIR)'\'')' -- \
-	  lib/Dancer2/Plugin/Form.pm blib/lib/Dancer2/Plugin/Form.pm 
+	  lib/Dancer2/Plugin/TemplateFlute.pm blib/lib/Dancer2/Plugin/TemplateFlute.pm \
+	  lib/Dancer2/Plugin/TemplateFlute/Form.pm blib/lib/Dancer2/Plugin/TemplateFlute/Form.pm 
 	$(NOECHO) $(TOUCH) pm_to_blib
 
 

@@ -1,88 +1,79 @@
 use strict;
 use warnings;
+use Test::More;
+use Test::Deep;
+use Test::Fatal;
+use Dancer2::Core::Session;
+use aliased 'Dancer2::Plugin::TemplateFlute::Form';
+use DDP;
 
-use Plack::Test;
-use Dancer2::Test;
-use HTTP::Request::Common;
-use HTTP::Cookies;
+my ( $form, $session, $log, @logs );
 
-use Test::More tests => 14;
-use Data::Dumper;
+# logger and session
 
-use lib './t/lib/TestApp';
-use TestApp;
-
-my $test_app = "TestApp";
-use_ok $test_app;
-my $app = $test_app->to_app;
-is( ref $app, 'CODE', 'Got app' );
-
-my $dsl = $test_app->dsl;
-$dsl->set(
-    log => 'debug',
-    logger => 'console',
-    session => 'Simple'    
-);
-
-my $jar  = HTTP::Cookies->new();
-my $test = Plack::Test->create($app);
-
-my $test_form = {
-    fields  => ['first-name', 'last-name']
+my $log_cb = sub {
+    my $level = shift;
+    my $message = join( '', @_ );
+    push @logs, { $level => $message };
 };
 
-my $res = $test->request(POST 'http://localhost:3000/init_one_form',
-    [ form => $dsl->to_json({ %{$test_form} }) ]);
-$jar->extract_cookies($res);
-my $form = $dsl->from_json($res->content);
-ok( $form->{name} eq 'test-form', 'Init form->name.');
-ok( scalar @{$test_form->{fields}} == scalar @{$form->{fields}}, 'Same amount of form fields initialized.');
+is exception { $session = Dancer2::Core::Session->new( id => 1 ) }, undef,
+  "create a session object";
 
-for (
-    my $i = 0;
-    $i <= (scalar @{$test_form->{fields}} - 1);
-    $i++
-) {
-    ok( $test_form->{fields}[$i] eq $form->{fields}[$i], qq{$test_form->{fields}[$i] field added to form.} );
-}
+# new with no args
 
-my $params = { 'first-name' => 'John', 'last-name' => 'doe', 'foo' => 'bar' };
-my $req = POST 'http://localhost:3000/one_form', $params;
-$jar->add_cookie_header($req);
-$res = $test->request($req);
-my $stored_form = $dsl->from_json($res->content);
+like exception { Form->new }, qr/Missing required arguments: session at/,
+  "Form->new with no args dies";
 
-foreach ( @{$stored_form->{fields}} ) {
-    ok($stored_form->{values}->{$_} eq $params->{$_}, qq{Form object stored relevant value for $_.});
-}
-my %relevant_params = map { $_ => 1 } @{$stored_form->{fields}};
-foreach ( keys $params ) {
-    next if exists($relevant_params{$_});
-    ok(!exists($relevant_params{$_}), qq{Irrelevant param $_ not stored in form object.});
-}
+# new form with good log_cb and empty session
 
-$req = GET 'http://localhost:3000/one_form';
-$jar->add_cookie_header($req);
-$res = $test->request($req);
-$stored_form = $dsl->from_json($res->content);
-foreach (keys %relevant_params) {
-    ok($stored_form->{values}->{$_} eq $params->{$_}, qq{Value for $_ stored in session correctly.});
-}
+is exception { $form = Form->new( log_cb => $log_cb, session => $session ) },
+  undef,
+  "Form->new with valid session lives";
 
-$req = GET 'http://localhost:3000/reset_test';
-$jar->add_cookie_header($req);
-$res = $test->request($req);
-$stored_form = $dsl->from_json($res->content);
-ok($stored_form->{name} && @{$stored_form->{fields}} == 0, qq{Form reset successfully.});
+ok !defined $session->read('form'), "No form data in the session";
+ok !@logs, "Nothing logged";
 
-$req = GET 'http://localhost:3000/fill_test';
-$jar->add_cookie_header($req);
-$res = $test->request($req);
-$stored_form = $dsl->from_json($res->content);
-ok($stored_form->{values}->{'first-name'} eq 'John', qq{Form filled successfully.});
+ok !defined $form->action, "action is undef";
+cmp_ok ref( $form->errors ), 'eq', 'Hash::MultiValue',
+  'errors is a Hash::MultiValue';
+cmp_ok scalar $form->errors->keys, '==', 0, 'errors is empty';
+cmp_ok ref( $form->fields ), 'eq', 'ARRAY', 'fields is an array reference';
+cmp_ok @{ $form->fields }, '==', 0, 'fields is empty';
+cmp_ok ref( $form->log_cb ), 'eq', 'CODE', 'log_cb is a code reference';
+cmp_ok $form->name, 'eq', 'main', 'form name is "main"';
+ok $form->pristine, "form is pristine";
+ok $session->can('read'),  'session->can read';
+ok $session->can('write'), 'session->can write';
+ok !defined $form->valid, "valid is undef";
+cmp_ok ref( $form->values ), 'eq', 'Hash::MultiValue',
+  'values is a Hash::MultiValue';
+cmp_ok scalar $form->values->keys, '==', 0, 'values is empty';
 
-$req = GET 'http://localhost:3000/fail_test';
-$jar->add_cookie_header($req);
-$res = $test->request($req);
-$stored_form = $dsl->from_json($res->content);
-ok($stored_form->{errors}->{'last-name'}, qq{Failure method successfully set errors.});
+# add_error
+
+is exception { $form->add_error( foo => "bar" ) }, undef,
+  'add_error foo => "bar" ';
+
+cmp_deeply $form->errors->mixed, { foo => "bar" }, "errors looks good";
+ok $form->pristine, "form is pristine";
+cmp_ok $form->valid, '==', 0, "valid is 0";
+
+cmp_ok @logs, '==', 1, '1 log entry';
+$log = pop @logs;
+cmp_ok $log->{debug}, 'eq', 'Setting valid for form main to 0.',
+  'got "valid is 0" debug log entry';
+
+cmp_deeply $session->read('form'),
+  {
+    main => {
+        errors => { foo => "bar" },
+        fields => [],
+        name   => "main",
+        valid  => 0,
+        values => {}
+    },
+  },
+  "form in session looks good";
+
+done_testing;

@@ -30,7 +30,7 @@ has errors => (
             $_[0];
         }
         elsif ( ref( $_[0] ) eq 'HASH' ) {
-            Hash::MultiValue->from_mixed( @_[0] );
+            Hash::MultiValue->from_mixed( $_[0] );
         }
         else {
             Hash::MultiValue->new(@_);
@@ -82,7 +82,7 @@ has valid => (
         my ( $self, $value ) = @_;
 
         $self->log( "debug", "Setting valid for form ",
-            $self->name, "to $value." );
+            $self->name, " to $value." );
 
         $self->to_session;
     },
@@ -98,13 +98,14 @@ has values => (
             $_[0];
         }
         elsif ( ref( $_[0] ) eq 'HASH' ) {
-            Hash::MultiValue->from_mixed( @_[0] );
+            Hash::MultiValue->from_mixed( $_[0] );
         }
         else {
             Hash::MultiValue->new(@_);
         }
     },
-    clearer   => 1,
+    trigger => sub { $_[0]->pristine(0) },
+    clearer => 1,
 );
 
 #
@@ -147,7 +148,8 @@ sub from_session {
 }
 
 sub log {
-    shift->log_cb->(@_);
+    my $self = shift;
+    $self->log_cb->(@_);
 }
 
 sub reset {
@@ -256,7 +258,7 @@ Get form fields:
 
 A code reference that can be used to log things. Signature must be like:
 
-  $log_cb->( $level, @message );
+  $log_cb->( $form_obj, $level, @message );
 
 Logging is via L</log> method.
 

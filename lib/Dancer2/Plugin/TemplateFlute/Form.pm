@@ -1,5 +1,6 @@
 package Dancer2::Plugin::TemplateFlute::Form;
 
+use Carp;
 use Hash::MultiValue;
 use Types::Standard -types;
 use Moo;
@@ -16,13 +17,15 @@ Dancer2::Plugin::TemplateFlute::Form - form object for Template::Flute
 #
 
 has action => (
-    is        => 'rw',
+    is        => 'ro',
     isa       => Str,
     predicate => 1,
+    writer    => 'set_action',
 );
 
 has errors => (
-    is      => 'rw',
+    is      => 'ro',
+    lazy    => 1,
     isa     => InstanceOf ['Hash::MultiValue'],
     default => sub { Hash::MultiValue->new },
     coerce  => sub {
@@ -32,29 +35,44 @@ has errors => (
         elsif ( ref( $_[0] ) eq 'HASH' ) {
             Hash::MultiValue->from_mixed( $_[0] );
         }
-        else {
+        elsif ( @_ && !@_ % 2 ) {
             Hash::MultiValue->new(@_);
         }
-    },
-    trigger => sub {
-        $_[0]->valid(0);
+        else {
+            croak "Unable to coerce errors";
+        }
     },
     clearer => 1,
+    writer  => 'set_errors',
 );
 
+sub add_error {
+    my $self = shift;
+    $self->errors->add(@_);
+}
+
+sub set_error {
+    my $self = shift;
+    $self->errors->set(@_);
+}
+
+after 'add_error', 'set_error', 'set_errors' => sub {
+    $_[0]->set_valid(0);
+};
+
 has fields => (
-    is      => 'rw',
+    is      => 'ro',
+    lazy    => 1,
     isa     => ArrayRef,
     default => sub { [] },
     clearer => 1,
+    writer  => 'set_fields',
 );
 
 has log_cb => (
-    is      => 'ro',
-    isa     => CodeRef,
-    default => sub {
-        sub { 1 }
-    },
+    is        => 'ro',
+    isa       => CodeRef,
+    predicate => 1,
 );
 
 has name => (
@@ -64,9 +82,10 @@ has name => (
 );
 
 has pristine => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => Bool,
     default => 1,
+    writer  => 'set_pristine',
 );
 
 has session => (
@@ -76,21 +95,23 @@ has session => (
 );
 
 has valid => (
-    is      => 'rw',
+    is      => 'ro',
     isa     => Bool,
-    trigger => sub {
-        my ( $self, $value ) = @_;
-
-        $self->log( "debug", "Setting valid for form ",
-            $self->name, " to $value." );
-
-        $self->to_session;
-    },
     clearer => 1,
+    writer  => '_set_valid',
 );
+
+sub set_valid {
+    my ( $self, $value ) = @_;
+    $self->_set_valid($value);
+    $self->log( "debug", "Setting valid for form ",
+        $self->name, " to $value." );
+    $self->to_session;
+}
 
 has values => (
     is      => 'ro',
+    lazy    => 1,
     isa     => InstanceOf ['Hash::MultiValue'],
     default => sub { Hash::MultiValue->new },
     coerce  => sub {
@@ -100,31 +121,28 @@ has values => (
         elsif ( ref( $_[0] ) eq 'HASH' ) {
             Hash::MultiValue->from_mixed( $_[0] );
         }
-        else {
+        elsif ( @_ && !@_ % 2 ) {
             Hash::MultiValue->new(@_);
         }
+        else {
+            croak "Unable to coerce values";
+        }
     },
-    trigger => sub { $_[0]->pristine(0) },
+    trigger => sub { $_[0]->pristine(0) if $_[1]->keys },
     clearer => 1,
+    writer  => 'set_values',
 );
 
 #
 # methods
 #
 
-sub add_error {
-    my $self = shift;
-    $self->errors->add(@_);
-    $self->valid(0);
-}
-
 sub errors_hashed {
-    my ($self) = @_;
-    my (@hashed);
+    my $self = shift;
+    my @hashed;
 
-    for my $err ( @{ $self->errors } ) {
-        push( @hashed, { name => $err->[0], label => $err->[1] } );
-    }
+    $self->errors->each(
+        sub { push @hashed, +{ name => $_[0], label => $_[1] } } );
 
     return \@hashed;
 }
@@ -136,10 +154,13 @@ sub from_session {
         if ( exists $forms_ref->{ $self->name } ) {
             my $form = $forms_ref->{ $self->name };
 
-            $self->fields( $form->fields ) if $form->fields;
-            $self->errors( $form->errors ) if $form->errors;
-            $self->values( $form->values ) if $form->values;
-            $self->valid( $form->valid )   if defined $form->valid;
+            $self->set_fields( $form->fields ) if $form->fields;
+            $self->set_errors( $form->errors ) if $form->errors;
+            $self->fill( $form->values )       if $form->values;
+
+            # set_valid causes write back to session so use private
+            # method instead
+            $self->_set_valid( $form->valid ) if defined $form->valid;
 
             return 1;
         }
@@ -149,7 +170,7 @@ sub from_session {
 
 sub log {
     my $self = shift;
-    $self->log_cb->(@_);
+    $self->log_cb->(@_) if $self->has_log_cb;
 }
 
 sub reset {
@@ -158,14 +179,8 @@ sub reset {
     $self->clear_errors;
     $self->clear_values;
     $self->clear_valid;
-    $self->pristine(1);
+    $self->set_pristine(1);
     $self->to_session;
-}
-
-sub set_error {
-    my $self = shift;
-    $self->errors->set(@_);
-    $self->valid(0);
 }
 
 sub to_session {
@@ -198,15 +213,11 @@ Defaults to 'main',
 
 =head2 action
 
-Set form action:
-    
-   $form->action('/checkout');
-
-Get form action:
-
-   $action = $form->action;
+The form action.
 
 =over
+
+=item writer: set_action
 
 =item predicate: has_action
 
@@ -216,19 +227,21 @@ Get form action:
     
 Errors stored in a L<Hash::MultiValue> object.
 
-Set form errors (this will overwrite all existing errors):
-    
-    $form->errors(
-        username => 'Minimum 8 characters',
-        username => 'Must contain at least one number',
-        email    => 'Invalid email address',
-    );
-
 Get form errors:
 
    $errors = $form->errors;
 
 =over
+
+=item writer: set_errors
+
+Set form errors (this will overwrite all existing errors):
+    
+    $form->set_errors(
+        username => 'Minimum 8 characters',
+        username => 'Must contain at least one number',
+        email    => 'Invalid email address',
+    );
 
 =item clearer: clear_errors
 
@@ -240,15 +253,15 @@ Instead use one of L</add_error> or L</set_error> methods.
 
 =head2 fields
 
-Set form fields:
-    
-    $form->fields([qw/username email password verify/]);
-
 Get form fields:
 
     $fields = $form->fields;
 
 =over
+
+=item writer: set_fields
+
+    $form->set_fields([qw/username email password verify/]);
 
 =item clearer: clear_fields
 
@@ -272,6 +285,12 @@ of errors.
 A form is pristine until it receives form field input from the request or
 out of the session.
 
+=over
+
+=item writer: set_pristine
+
+=back
+
 =head2 session
 
 A session object. Must have methods C<read> and C<write>.
@@ -284,26 +303,19 @@ Determine whether form values are valid:
 
     $form->valid();
 
-Return values are 1 (valid), 0 (invalid) or
-undef (unknown).
+Return values are 1 (valid), 0 (invalid) or C<undef> (unknown).
 
-Set form status to "valid":
-    
-    $form->valid(1);
-
-Set form status to "invalid":
-    
-    $form->valid(0);
-
-The form status automatically changes to "invalid" when L</errors> is set
-or either L</add_errors> or L</set_errors> are called.
-    
 =over
+
+=item writer: set_valid
 
 =item clearer: clear_valid
 
 =back
 
+The form status automatically changes to "invalid" when L</errors> is set
+or either L</add_errors> or L</set_errors> are called.
+    
 =head2 values
 
 Get form values as hash reference:

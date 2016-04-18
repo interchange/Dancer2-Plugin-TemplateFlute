@@ -35,6 +35,9 @@ sub form {
 
     my $source = delete $params{source};
 
+    # for POST default to body_parameters
+    $source = 'body' if ( !$source && $plugin->app->request->is_post );
+
     if ( $source ) {
         if ( $source eq 'body' ) {
             $params{values} = $plugin->app->request->body_parameters;

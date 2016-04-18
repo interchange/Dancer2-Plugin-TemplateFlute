@@ -29,7 +29,9 @@ sub form {
     }
 
     my %params = @_;
-    $params{$name} = $name if $name;
+    $params{name} = $name if $name;
+
+    $plugin->app->log("debug", "form called with name: $params{name}");
 
     my $source = delete $params{source};
 

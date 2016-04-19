@@ -13,7 +13,10 @@ Dancer2::Plugin::TemplateFlute::Form - form object for Template::Flute
 =cut
 
 my $_coerce_to_hash_multivalue = sub {
-    if ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
+    if ( !defined $_[0] ) {
+        Hash::MultiValue->new;
+    }
+    elsif ( ref( $_[0] ) eq 'Hash::MultiValue' ) {
         $_[0];
     }
     elsif ( ref( $_[0] ) eq 'HASH' ) {

@@ -13,11 +13,26 @@ WriteMakefile(
     },
     PREREQ_PM => {
         'Carp'             => 0,
-        'Dancer2'          => '0.159002', # TODO: update with plugin2 min ver
-        'Dancer2::Plugin'  => '0.159002', # TODO: update with plugin2 min ver
+        'Dancer2'          => '0.200000',
+        'Dancer2::Plugin'  => 0,
         'Hash::MultiValue' => '0.12',
         'Moo'              => '2.000000',
         'namespace::clean' => 0,
         'Type::Tiny'       => 0,
     },
+    META_MERGE => {
+        'meta-spec' => { version => 2 },
+        resources   => {
+            repository => {
+                type => 'git',
+                url => 'https://github.com/interchange/Dancer2-Plugin-TemplateFlute.git',
+                web => 'https://github.com/interchange/Dancer2-Plugin-TemplateFlute',
+                bugtracker => 'https://github.com/interchange/Dancer2-Plugin-TemplateFlute/issues',
+            },
+            IRC => 'irc://irc.perl.org/#dancer',
+        },
+    },
+    dist => { COMPRESS => 'gzip -9f', SUFFIX => 'gz', },
+    clean => { FILES => 'Dancer2-Plugin-TemplateFlute-*' },
+
 );

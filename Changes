@@ -1,6 +1,8 @@
-Revision history for Perl module Dancer2::Plugin::Form
+Revision history for Perl module Dancer2::Plugin::TemplateFlute
+
+0.200 Thu 26 May 18:28:34 CEST 2016
+
+    * First CPAN release using some code from unreleased Dancer2::Plugin::Form
 
 0.01 Wed Apr  8 12:02:09 2015
     - original version; created by ExtUtils::ModuleMaker 0.52
-
-

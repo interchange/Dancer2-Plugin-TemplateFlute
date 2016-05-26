@@ -1,4 +1,5 @@
 README\.md
-^\.git\/
-.*\.swp$
+^\.git.*
+\.old$
+\.swp$
 MYMETA\..*

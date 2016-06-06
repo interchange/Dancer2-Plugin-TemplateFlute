@@ -15,6 +15,7 @@ WriteMakefile(
         'Carp'             => 0,
         'Dancer2'          => '0.200000',
         'Dancer2::Plugin'  => 0,
+        'Dancer2::Template::TemplateFlute' => '0.201',
         'Hash::MultiValue' => '0.12',
         'Moo'              => '2.000000',
         'namespace::clean' => 0,

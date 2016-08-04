@@ -130,6 +130,13 @@ has values => (
     writer  => 'fill',
 );
 
+# in case fill gets passed a list then convert to hashref
+around fill => sub {
+    my ( $orig, $self ) = ( shift, shift );
+    my $values = @_ && ref( $_[0] ) ? $_[0] : {@_};
+    $orig->( $self, $values );
+};
+
 #
 # methods
 #

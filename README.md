@@ -4,7 +4,7 @@ Dancer2::Plugin::TemplateFlute - Dancer2 form handler for Template::Flute templa
 
 # VERSION
 
-Version 0.0002
+Version 0.201
 
 # SYNOPSIS
 
@@ -132,6 +132,10 @@ on your bug as we make changes.
 # LICENSE AND COPYRIGHT
 
 Copyright 2011-2016 Stefan Hornburg (Racke).
+
+Copyright 2015-1016 Evan Brown.
+
+Copyright 2016 Peter Mottram (SysPete).
 
 This program is free software; you can redistribute it and/or modify it
 under the terms of either: the GNU General Public License as published

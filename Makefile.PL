@@ -4,6 +4,7 @@ WriteMakefile(
     VERSION_FROM   => 'lib/Dancer2/Plugin/TemplateFlute.pm',
     ABSTRACT_FROM  => 'lib/Dancer2/Plugin/TemplateFlute.pm',
     AUTHOR         => 'Evan Brown (evan@bottlenose-wine.com)',
+    LICENSE        => 'artistic_2',
     BUILD_REQUIRES => {
         'aliased'       => 0,
         'JSON::MaybeXS' => 0,

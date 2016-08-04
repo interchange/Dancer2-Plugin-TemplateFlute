@@ -12,11 +12,11 @@ Dancer2::Plugin::TemplateFlute - Dancer2 form handler for Template::Flute templa
 
 =head1 VERSION
 
-Version 0.201
+Version 0.202
 
 =cut
 
-our $VERSION = '0.201';
+our $VERSION = '0.202';
 
 plugin_keywords 'form';
 

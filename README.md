@@ -4,7 +4,7 @@ Dancer2::Plugin::TemplateFlute - Dancer2 form handler for Template::Flute templa
 
 # VERSION
 
-Version 0.201
+Version 0.202
 
 # SYNOPSIS
 
